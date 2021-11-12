@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residence Hall</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css' rel='stylesheet' />
+
+
+</head>
+<body>
+<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">International House</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/residentTaskRequest">Task Requests</a>
+                <a class="nav-link" href="/residentFinanceRequests">Finance Requests</a>
+                <a class="nav-link" href="/residentDiningHall">Order Food</a>
+                <a class="nav-link" href="/residentDiningHall">Billing Summary</a>
+
+            </div>
+            <div class="navbar-nav ms-auto">
+
+                    <a class="nav-link" href="/login">Logout</a>
+                    <a class="nav-link" href="/register">Register</a>
+
+
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<div class="row">
+        <h1 class="text-center">New Task</h1>
+        <div class="col-md-6 offset-md-3">
+<form action="/newTaskRequest" method="POST">
+                <div class="mb-3">
+                    <label class="form-label" for="residentID">Resident ID</label>
+                    <input class="form-control" type="text" id="residentID" name="residentID" required>
+
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="requestID">requestID</label>
+                    <input class="form-control" type="text" id="requestID" name="requestID" required>
+
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea class="form-control" type="text" id="description" name="description"
+                        required></textarea>
+
+                </div>
+                <div class="mb-3">
+                    <div class="form-group">
+                        Task Category: <input list="category" name="category" required>
+                        <datalist id="category">
+                        <option value="Carpentary">Carpentary</option>
+                        <option value="AC Repair">AC Repair</option>
+                        <option value="Heater Repair">Heater Repair</option>
+                        <option value="Elevator Repair">Elevator Repair</option>
+                        <option value="Bathroom Shower Repair">Bathroom Shower Repair</option>
+                        </datalist>
+
+                    </div>
+
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-success" type="submit">Raise Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+<br>
+<br>
+<br>
+<footer class="footer bg-dark py-3 mt-auto">
+    <div class="container">
+        <span class="text-muted">&copy; ResidenceHall 2021</span>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+                integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+                crossorigin="anonymous"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js"
+                integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/"
+                crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+                integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+                crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js"
+                integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT"
+                crossorigin="anonymous"></script>
+
+</body>
+
+
+</html>
+
