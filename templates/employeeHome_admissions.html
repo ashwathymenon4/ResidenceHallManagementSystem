@@ -33,15 +33,81 @@
         </div>
     </div>
 </nav>
-<h1> Hello! These are the pending applications.</h1>
-<div>
-    {% for n in data %}
-    <div>{{n}}</div>
-    {% endfor %}
-  </div>
+<h2>Hello!</h2>
+<h3>These are the pending applications.</h3>
+<table border="1" class="dataframe" frame=hsides rules=rows>
+    <thead>
+        <tr style="text-align: left;">
+            <th>Application ID</th>
+            <th>Name</th>
+            <th>Citizenship</th>
+            <th>Passport Number</th>
+            <th>Date of Birth</th>
+            <th>Gender</th>
+            <th>Room Preference</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Requested On</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for n in pending_applications %}
+        <tr>
+            <td>{{ n[0] }}</td>
+            <td>{{ n[1] }}</td>
+            <td>{{ n[2] }}</td>
+            <td>{{ n[3] }}</td>
+            <td>{{ n[4] }}</td>
+            <td>{{ n[5] }}</td>
+            <td>{{ n[6] }}</td>
+            <td>{{ n[7] }}</td>
+            <td>{{ n[8] }}</td>
+            <td>{{ n[9] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>This is the status of various rooms.</h3>
+<table style="width:400px" border="1" class="dataframe" rules=rows>
+    <thead>
+        <tr style="text-align: left;">
+            <th>Room Number</th>
+            <th>Vacant From</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for n in rooms %}
+        <tr>
+            <td>{{ n[0] }}</td>
+            <td>{{ n[1] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Approval Form</h3>
+  {% if error %}
+    <p><strong>Error:</strong> {{ error }}</p>
+  {% endif %}
+  <form method="POST" action="/admissions/approved">
+      <p>Application ID: <input type="text" name="application_id" required></p>
+      <p>Room Number: <input type="text" name="room_number" required></p>
+      <p><input type="submit" value="Approve"></p>
+  </form>
+
+<h3>Rejection Form</h3>
+  {% if error1 %}
+    <p><strong>Error:</strong> {{ error1 }}</p>
+  {% endif %}
+  <form method="POST" action="/admissions/rejected">
+      <p>Application ID: <input type="text" name="employee_id" required></p>
+      <p><input type="submit" value="Reject"></p>
+  </form>
+
 <footer class="footer bg-dark py-3 mt-auto">
     <div class="container">
-        <span class="text-muted">&copy; ResidenceHall 2021</span>
+        <span class="text-muted">&copy;ResidenceHall 2021</span>
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
