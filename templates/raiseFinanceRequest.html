@@ -15,7 +15,7 @@
 
 
 </head>
-<body class="d-flex flex-column vh-100">
+<body>
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">International House</a>
@@ -34,7 +34,7 @@
             </div>
             <div class="navbar-nav ms-auto">
 
-                    <a class="nav-link" href="/login">Logout</a>
+                    <a class="nav-link" href="/login">Login</a>
                     <a class="nav-link" href="/register">Register</a>
 
 
@@ -43,28 +43,62 @@
     </div>
 </nav>
 
+
 <div class="row">
-    <div class="row">
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Raise a new Task Request</h5>
-        <p class="card-text"> Raise a task request related to any repairs for the room or common areas. The facilities team will get back to you as soon as possible.</p>
-        <a href="/raiseTaskRequest" class="btn btn-primary">Create a Task Request</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Raise a new Finance Request</h5>
-        <p class="card-text">Raise Financial Aid Requests or Finance Requests for room rent, dining fees etc. The Finance Team will get back to you as soon as possible.</p>
-        <a href="/raiseFinanceRequest" class="btn btn-primary">Create Finance Request</a>
-      </div>
-    </div>
-  </div>
+        <h1 class="text-center">New Task</h1>
+        <div class="col-md-6 offset-md-3">
+<form action="/newFinanceRequest" method="POST">
+
+                <div class="mb-3">
+                    <label class="form-label" for="residentID">Resident ID</label>
+                    <input class="form-control" type="text" id="residentID" name="residentID" required>
+
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="requestID">requestID</label>
+                    <input class="form-control" type="text" id="requestID" name="requestID" required>
+
+                </div>
+                <div class="mb-3">
+                    <div class="form-group">
+                        Finance Request Description: <input list="financeCategory" name="financeCategory" required>
+                        <datalist id="financeCategory">
+                        <option value="Dodge Foundation Fund">Dodge Foundation Fund</option>
+                        <option value="The Haberman Fund">The Haberman Fund</option>
+                        <option value="Mitsui USA Foundation Fund">Mitsui USA Foundation Fund</option>
+                        <option value="Rent Payment">Rent Payment</option>
+                        <option value="Dining Fees">Dining Fees</option>
+                        </datalist>
+
+                    </div>
+
+                </div>
+
+
+
+                    <div class="mb-3">
+                    <label class="form-label" for="amount">Amount in $:</label>
+                    <input class="form-control" type="number" id="amount" name="amount" required>
+
+                    </div>
+
+                    <div class="mb-3">
+                        <button class="btn btn-success" type="submit">Raise Request</button>
+                    </div>
+
+
+            </form>
+            <div>
+
 </div>
-</div>
+        </div>
+    </div>
+
+
+
+<br>
+<br>
+<br>
 <footer class="footer bg-dark py-3 mt-auto">
     <div class="container">
         <span class="text-muted">&copy; ResidenceHall 2021</span>

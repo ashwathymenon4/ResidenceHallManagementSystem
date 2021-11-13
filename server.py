@@ -169,11 +169,40 @@ def residents():
     context = dict(todays_date=today)
     return render_template("residentHome.html", **context)
 
+@app.route('/raiseFinanceRequest')
+def raiseFinanceRequest():
+    return render_template("raiseFinanceRequest.html")
+
+@app.route('/newFinanceRequest', methods=['POST'])
+def add_new_FinanceRequest():
+    residentID = request.form['residentID']
+    requestID = request.form['requestID']
+    description = request.form['financeCategory']
+
+    request_priority = 1
+    request_status = 'Pending'
+    amount = request.form['amount']
+
+    today = str(date.today())
+    print(today)
+    raisedon = today
+    args = (requestID, description, request_priority, request_status)
+    g.conn.execute(
+        "INSERT INTO Requests(requestid,request_description, request_priority, request_status) VALUES (%s, %s, %s, %s)",
+        args)
+    args = (requestID, amount)
+    g.conn.execute("INSERT INTO Finance_Requests(requestid,amount) VALUES (%s, %s)", args)
+    args = (residentID, requestID, raisedon)
+    g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
+    return render_template("index.html")
+
 @app.route('/raiseTaskRequest')
 def raiseTaskRequest():
     today = str(date.today())
     context = dict(todays_date=today)
     return render_template("raiseTaskRequest.html", **context)
+
+
 
 @app.route('/newTaskRequest', methods=['POST'])
 def add_new_TaskRequest():
