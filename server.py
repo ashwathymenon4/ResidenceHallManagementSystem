@@ -448,8 +448,7 @@ def admission_rejected():
                                         old_status)
     new_status = "rejected"
     application_id_list = []
-    status_needed = "pending"
-    cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", status_needed)
+    cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
     pending_applications = []
     for result in cursor:
         pending_applications.append(result)
@@ -462,10 +461,12 @@ def admission_rejected():
     context = dict(pending_applications=pending_applications, rooms=rooms)
     for result in all_application_id:
         application_id_list.append(int(result[0]))
+    print(application_id)
+    print(application_id_list)
     if int(application_id) not in application_id_list:
         error1 = "Please verify the details you have entered"
         return render_template("employeeHome_admissions.html", **context, error1=error1)
-    g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s AND processed_on=CURRENT_DATE"
+    g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
                    "WHERE applicationid=%s", (new_status, application_id))
     return redirect("/admissions")
 
