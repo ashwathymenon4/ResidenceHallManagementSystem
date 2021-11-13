@@ -24,46 +24,21 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-                <a class="nav-link" href="/residentTaskRequest">Task Requests</a>
-                <a class="nav-link" href="/residentFinanceRequests">Finance Requests</a>
-                <a class="nav-link" href="/residentDiningHall">Order Food</a>
-                <a class="nav-link" href="/residentDiningHall">Billing Summary</a>
-
-            </div>
             <div class="navbar-nav ms-auto">
 
                     <a class="nav-link" href="/logout">Logout</a>
-                    <a class="nav-link" href="/register">Register</a>
 
 
             </div>
         </div>
     </div>
 </nav>
-<h1> Hello</h1>
-<div class="row">
-    <div class="row">
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Raise a new Task Request</h5>
-        <p class="card-text"> Raise a task request related to any repairs for the room or common areas. The facilities team will get back to you as soon as possible.</p>
-        <a href="/raiseTaskRequest" class="btn btn-primary">Create a Task Request</a>
-      </div>
-    </div>
+<h1> Hello! These are the pending applications.</h1>
+<div>
+    {% for n in data %}
+    <div>{{n}}</div>
+    {% endfor %}
   </div>
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Special title treatment</h5>
-        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-        <a href="#" class="btn btn-primary">Go somewhere</a>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
 <footer class="footer bg-dark py-3 mt-auto">
     <div class="container">
         <span class="text-muted">&copy; ResidenceHall 2021</span>

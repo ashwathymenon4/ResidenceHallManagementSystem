@@ -11,15 +11,19 @@ import os
 # accessible as a variable in index.html:
 import random
 from typing import Any, Tuple
+from nocache import nocache
 
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, session, flash
 from datetime import date
-
+from flask_session import Session
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 #
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
@@ -38,6 +42,7 @@ DATABASEURI = "postgresql://sr3846:5390@34.74.246.148/proj1part2"
 # This line creates a database engine that knows how to connect to the URI above.
 #
 engine = create_engine(DATABASEURI)
+
 
 #
 # Example of running queries in your database
@@ -151,7 +156,18 @@ def index():
     # render_template looks in the templates/ folder for files.
     # for example, the below file reads template/index.html
     #
-    return render_template("index.html")
+    if session["id"] is not None:
+        if session["type"] == "resident":
+            return render_template("residentHome.html")
+        else:
+            if session["deptid"] == 4000:
+                return render_template("employeeHome_admissions.html")
+            elif session["deptid"] == 4001:
+                return render_template("employeeHome_finance.html")
+            else:
+                return render_template("employeeHome_facilities.html")
+    else:
+        return render_template("index.html")
 
 
 #
@@ -163,11 +179,16 @@ def index():
 # The functions for each app.route need to have different names
 #
 
-@app.route('/residentHome')
-def residents():
-    today = str(date.today())
-    context = dict(todays_date=today)
-    return render_template("residentHome.html", **context)
+# @app.route('/residentHome')
+# def residents():
+#     print(session["id"])
+#     if session["id"] is not None:
+#         today = str(date.today())
+#         context = dict(todays_date=today)
+#         return render_template("residentHome.html", **context)
+#     else:
+#         return render_template("index.html")
+
 
 @app.route('/raiseTaskRequest')
 def raiseTaskRequest():
@@ -175,9 +196,10 @@ def raiseTaskRequest():
     context = dict(todays_date=today)
     return render_template("raiseTaskRequest.html", **context)
 
+
 @app.route('/newTaskRequest', methods=['POST'])
 def add_new_TaskRequest():
-    residentID = request.form['residentID']
+    residentID = session['id']
     requestID = request.form['requestID']
     description = request.form['description']
     category = request.form['category']
@@ -185,20 +207,22 @@ def add_new_TaskRequest():
     request_status = 'Pending'
 
     today = str(date.today())
-    print(today)
     raisedon = today
-    args = (requestID ,description , request_priority, request_status)
-    g.conn.execute("INSERT INTO Requests(requestid,request_description, request_priority, request_status) VALUES (%s, %s, %s, %s)",args)
-    args=(requestID, category)
-    g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
-    args=(residentID,requestID,raisedon)
-    g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
-    return render_template("index.html")
+    args = (requestID, description, request_priority, request_status)
+    g.conn.execute(
+        "INSERT INTO Requests (requestid, request_description, request_priority, request_status) VALUES (%s, %s, %s, "
+        "%s)",
+        args)
+    args = (requestID, category)
+    g.conn.execute("INSERT INTO Task_Requests (requestid, category) VALUES (%s, %s)", args)
+    args = (residentID, requestID, raisedon)
+    g.conn.execute("INSERT INTO Raises (residentid, requestid, raisedon) VALUES (%s, %s, %s)", args)
+    return render_template("residentHome.html")
+
 
 @app.route('/applicants')
 def applicants():
     today = str(date.today())
-    print(today)
     context = dict(todays_date=today)
     return render_template("applicants.html", **context)
 
@@ -218,8 +242,9 @@ def add():
     requested_on = str(date.today())
     processed_on = None
     approval_status = None
-    args: Tuple[str, str, str, str, str, str, str, str, str, str, str, Any] = (name, citizenship, passport_number, date_of_birth, gender, room_preference, start_date, end_date, processed_on, requested_on, approval_status, deptid)
-    print(args)
+    args: Tuple[str, str, str, str, str, str, str, str, str, str, str, Any] = (
+        name, citizenship, passport_number, date_of_birth, gender, room_preference, start_date, end_date, processed_on,
+        requested_on, approval_status, deptid)
     g.conn.execute('INSERT INTO Applicants_ApprovedBy(name, citizenship, passport_number, date_of_birth, gender, '
                    'room_preference, start_date, end_date, processed_on, requested_on, approval_status, '
                    'deptid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
@@ -234,10 +259,86 @@ def add():
     return render_template("application_successful.html", **context)
 
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+@app.route('/resident_login_page')
+def render_resident_login_page():
+    return render_template("resident_login.html")
+
+
+@app.route('/residentHome', methods=["POST", "GET"])
+@nocache
+def resident_login():
+    session["type"] = "resident"
+    if request.method == "POST":
+        resident_id = request.form.get("resident_id")
+        password = request.form.get("password")
+        all_resident_id = g.conn.execute("SELECT residentid FROM Residents")
+        resident_id_list = []
+        for result in all_resident_id:
+            resident_id_list.append(int(result[0]))
+        # record the user name
+        cursor = g.conn.execute("SELECT passport_number FROM Residents WHERE residentid=%s", resident_id)
+        passport_number = []
+        for result in cursor:
+            passport_number.append(result)
+        if len(passport_number) != 0:
+            if passport_number[0][0] == password and (int(resident_id) in resident_id_list):
+                session["id"] = resident_id
+            else:
+                error = 'Invalid username or password. Please try again!'
+                return render_template('resident_login.html', error=error)
+        else:
+            error = 'Invalid username or password. Please try again!'
+            return render_template('resident_login.html', error=error)
+        return redirect("/")
+        # redirect to the main page
+    elif request.method == "GET":
+        return redirect("/")
+
+
+@app.route('/employee_login_page')
+def render_employee_login_page():
+    return render_template("employee_login.html")
+
+
+@app.route('/employeeHome', methods=["POST", "GET"])
+def employee_login():
+    session["type"] = "employee"
+    if request.method == "POST":
+        employee_id = request.form.get("employee_id")
+        password = request.form.get("password")
+        all_employee_id = g.conn.execute("SELECT employeeid FROM Employees")
+        employee_id_list = []
+        for result in all_employee_id:
+            employee_id_list.append(int(result[0]))
+        # record the user name
+        cursor = g.conn.execute("SELECT ssn FROM Employees WHERE employeeid=%s", employee_id)
+        ssn = []
+        for result in cursor:
+            ssn.append(result)
+        if len(ssn) != 0:
+            if ssn[0][0] == password and (int(employee_id) in employee_id_list):
+                session["id"] = employee_id
+            else:
+                error = 'Invalid username or password. Please try again!'
+                return render_template('employee_login.html', error=error)
+        else:
+            error = 'Invalid username or password. Please try again!'
+            return render_template('employee_login.html', error=error)
+        cursor1 = g.conn.execute("SELECT deptid FROM Employees WHERE employeeid=%s", employee_id)
+        deptid = []
+        for result in cursor1:
+            deptid.append(result)
+        session["deptid"] = deptid[0]
+        return redirect("/")
+        # redirect to the main page
+    elif request.method == "GET":
+        return redirect("/")
+
+
+@app.route('/logout', methods=["GET"])
+def logout():
+    session["id"] = None
+    return redirect("/")
 
 
 if __name__ == "__main__":
