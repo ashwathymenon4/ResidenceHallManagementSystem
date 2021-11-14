@@ -284,9 +284,8 @@ def resident_login():
         for result in all_resident_id:
             resident_id_list.append(int(result[0]))
         # record the user name
-        try:
-            cursor = g.conn.execute("SELECT passport_number FROM Residents WHERE residentid=%s", resident_id)
-        except:
+        cursor = g.conn.execute("SELECT passport_number FROM Residents WHERE residentid=%s", resident_id)
+        if cursor.rowcount == 0:
             error = 'Invalid username or password. Please try again!'
             return render_template('resident_login.html', error=error)
         passport_number = []
@@ -319,14 +318,14 @@ def employee_login():
         for result in all_employee_id:
             employee_id_list.append(int(result[0]))
         # record the user name
-        try:
-            cursor = g.conn.execute("SELECT ssn FROM Employees WHERE empid=%s", employee_id)
-        except:
+        cursor = g.conn.execute("SELECT ssn FROM Employees WHERE empid=%s", employee_id)
+        if cursor.rowcount == 0:
             error = 'Invalid username or password. Please try again!'
             return render_template('employee_login.html', error=error)
         ssn = []
         for result in cursor:
             ssn.append(result)
+        print(ssn)
         if ssn[0][0] == password:
             session["id"] = employee_id
         else:
@@ -386,7 +385,8 @@ def finance_employee():
 
 @app.route('/facilities')
 def facilities_employee():
-    status_not_wanted = "completed"
+    status_not_wanted_1 = "complete"
+    status_not_wanted_2 = "completed"
     cursor = g.conn.execute(
         "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category "
         "FROM requests r "
@@ -394,7 +394,7 @@ def facilities_employee():
         "ON r.requestid=r1.requestid "
         "JOIN task_requests tr "
         "ON r.requestid=tr.requestid "
-        "WHERE r.request_status <> %s", status_not_wanted)
+        "WHERE r.request_status <> %s OR r.request_status <> %s", (status_not_wanted_1, status_not_wanted_2))
     task_requests = []
     for result in cursor:
         task_requests.append(result)
@@ -560,15 +560,17 @@ def facilities_status_update():
     new_status = request.form.get("current_status")
     result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
     if result.rowcount == 0:
-        status_not_wanted = "completed"
+        status_not_wanted_1 = "complete"
+        status_not_wanted_2 = "completed"
         cursor = g.conn.execute(
-            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category "
+            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
+            "tr.category "
             "FROM requests r "
             "JOIN raises r1 "
             "ON r.requestid=r1.requestid "
             "JOIN task_requests tr "
             "ON r.requestid=tr.requestid "
-            "WHERE r.request_status <> %s", status_not_wanted)
+            "WHERE r.request_status <> %s", (status_not_wanted_1, status_not_wanted_2))
         task_requests = []
         for result in cursor:
             task_requests.append(result)
@@ -585,7 +587,8 @@ def facilities_priority_update():
     new_priority = request.form.get("current_priority")
     result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_priority, request_id))
     if result.rowcount == 0:
-        status_not_wanted = "completed"
+        status_not_wanted_1 = "complete"
+        status_not_wanted_2 = "completed"
         cursor = g.conn.execute(
             "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
             "tr.category "
@@ -594,7 +597,7 @@ def facilities_priority_update():
             "ON r.requestid=r1.requestid "
             "JOIN task_requests tr "
             "ON r.requestid=tr.requestid "
-            "WHERE r.request_status <> %s", status_not_wanted)
+            "WHERE r.request_status <> %s", (status_not_wanted_1, status_not_wanted_2))
         task_requests = []
         for result in cursor:
             task_requests.append(result)
