@@ -11,6 +11,7 @@ import os
 # accessible as a variable in index.html:
 import random
 from typing import Any, Tuple
+from sqlalchemy import exc
 from nocache import nocache
 
 from sqlalchemy import *
@@ -248,10 +249,14 @@ def add():
     args: Tuple[str, str, str, str, str, str, str, str, str, str, str, Any] = (
         name, citizenship, passport_number, date_of_birth, gender, room_preference, start_date, end_date, processed_on,
         requested_on, approval_status, deptid)
-    g.conn.execute('INSERT INTO Applicants_ApprovedBy(name, citizenship, passport_number, date_of_birth, gender, '
-                   'room_preference, start_date, end_date, processed_on, requested_on, approval_status, '
-                   'deptid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
-                   , args)
+    try:
+        g.conn.execute('INSERT INTO Applicants_ApprovedBy(name, citizenship, passport_number, date_of_birth, gender, '
+                       'room_preference, start_date, end_date, processed_on, requested_on, approval_status, '
+                       'deptid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
+                       , args)
+    except:
+        error = "Please check that end date should be greater than start date"
+        return render_template("applicants.html", error=error)
     args1 = (citizenship, passport_number)
     cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE citizenship=%s AND "
                             "passport_number=%s", args1)
@@ -279,16 +284,16 @@ def resident_login():
         for result in all_resident_id:
             resident_id_list.append(int(result[0]))
         # record the user name
-        cursor = g.conn.execute("SELECT passport_number FROM Residents WHERE residentid=%s", resident_id)
+        try:
+            cursor = g.conn.execute("SELECT passport_number FROM Residents WHERE residentid=%s", resident_id)
+        except:
+            error = 'Invalid username or password. Please try again!'
+            return render_template('resident_login.html', error=error)
         passport_number = []
         for result in cursor:
             passport_number.append(result)
-        if len(passport_number) != 0:
-            if passport_number[0][0] == password and (int(resident_id) in resident_id_list):
-                session["id"] = resident_id
-            else:
-                error = 'Invalid username or password. Please try again!'
-                return render_template('resident_login.html', error=error)
+        if passport_number[0][0] == password:
+            session["id"] = resident_id
         else:
             error = 'Invalid username or password. Please try again!'
             return render_template('resident_login.html', error=error)
@@ -314,16 +319,16 @@ def employee_login():
         for result in all_employee_id:
             employee_id_list.append(int(result[0]))
         # record the user name
-        cursor = g.conn.execute("SELECT ssn FROM Employees WHERE empid=%s", employee_id)
+        try:
+            cursor = g.conn.execute("SELECT ssn FROM Employees WHERE empid=%s", employee_id)
+        except:
+            error = 'Invalid username or password. Please try again!'
+            return render_template('employee_login.html', error=error)
         ssn = []
         for result in cursor:
             ssn.append(result)
-        if len(ssn) != 0:
-            if ssn[0][0] == password and (int(employee_id) in employee_id_list):
-                session["id"] = employee_id
-            else:
-                error = 'Invalid username or password. Please try again!'
-                return render_template('employee_login.html', error=error)
+        if ssn[0][0] == password:
+            session["id"] = employee_id
         else:
             error = 'Invalid username or password. Please try again!'
             return render_template('employee_login.html', error=error)
@@ -363,12 +368,38 @@ def admissions_employee():
 
 @app.route('/finance')
 def finance_employee():
-    return render_template("employeeHome_finance.html")
+    status_needed = "pending"
+    cursor = g.conn.execute(
+        "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
+        "FROM requests r "
+        "JOIN raises r1 "
+        "ON r.requestid=r1.requestid "
+        "JOIN finance_requests fr "
+        "ON r.requestid=fr.requestid "
+        "WHERE r.request_status=%s", status_needed)
+    pending_finance_requests = []
+    for result in cursor:
+        pending_finance_requests.append(result)
+    context = dict(pending_finance_requests=pending_finance_requests)
+    return render_template("employeeHome_finance.html", **context)
 
 
 @app.route('/facilities')
 def facilities_employee():
-    return render_template("employeeHome_facilities.html")
+    status_not_wanted = "completed"
+    cursor = g.conn.execute(
+        "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category "
+        "FROM requests r "
+        "JOIN raises r1 "
+        "ON r.requestid=r1.requestid "
+        "JOIN task_requests tr "
+        "ON r.requestid=tr.requestid "
+        "WHERE r.request_status <> %s", status_not_wanted)
+    task_requests = []
+    for result in cursor:
+        task_requests.append(result)
+    context = dict(task_requests=task_requests)
+    return render_template("employeeHome_facilities.html", **context)
 
 
 @app.route('/admissions/approved', methods=["POST"])
@@ -469,6 +500,109 @@ def admission_rejected():
     g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
                    "WHERE applicationid=%s", (new_status, application_id))
     return redirect("/admissions")
+
+
+@app.route("/finance/approved", methods=["POST"])
+def finance_approved():
+    request_id = request.form.get("request_id")
+    amount = request.form.get("amount")
+    new_status = "approved"
+    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+    result = g.conn.execute("UPDATE Finance_Requests SET amount=%s WHERE requestid=%s", (amount, request_id))
+    if result.rowcount == 0:
+        status_needed = "pending"
+        cursor = g.conn.execute(
+            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
+            "FROM requests r "
+            "JOIN raises r1 "
+            "ON r.requestid=r1.requestid "
+            "JOIN finance_requests fr "
+            "ON r.requestid=fr.requestid "
+            "WHERE r.request_status=%s", status_needed)
+        pending_finance_requests = []
+        for result in cursor:
+            pending_finance_requests.append(result)
+        context = dict(pending_finance_requests=pending_finance_requests)
+        error = "Please check the Request ID"
+        return render_template("employeeHome_finance.html", **context, error=error)
+    else:
+        return redirect("/finance")
+
+
+@app.route('/finance/rejected', methods=["POST"])
+def finance_rejected():
+    request_id = request.form.get("request_id")
+    new_status = "rejected"
+    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+    if result.rowcount != 0:
+        return redirect("/finance")
+    else:
+        status_needed = "pending"
+        cursor = g.conn.execute(
+            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
+            "FROM requests r "
+            "JOIN raises r1 "
+            "ON r.requestid=r1.requestid "
+            "JOIN finance_requests fr "
+            "ON r.requestid=fr.requestid "
+            "WHERE r.request_status=%s", status_needed)
+        pending_finance_requests = []
+        for result in cursor:
+            pending_finance_requests.append(result)
+        context = dict(pending_finance_requests=pending_finance_requests)
+        error = "Please check the Request ID"
+        return render_template("employeeHome_finance.html", **context, error=error)
+
+
+@app.route('/facilities/status_update', methods=["POST"])
+def facilities_status_update():
+    request_id = request.form.get("request_id")
+    new_status = request.form.get("current_status")
+    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+    if result.rowcount == 0:
+        status_not_wanted = "completed"
+        cursor = g.conn.execute(
+            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category "
+            "FROM requests r "
+            "JOIN raises r1 "
+            "ON r.requestid=r1.requestid "
+            "JOIN task_requests tr "
+            "ON r.requestid=tr.requestid "
+            "WHERE r.request_status <> %s", status_not_wanted)
+        task_requests = []
+        for result in cursor:
+            task_requests.append(result)
+        context = dict(task_requests=task_requests)
+        error = "Please check the Request ID"
+        return render_template("employeeHome_facilities.html", **context, error=error)
+    else:
+        return redirect("/facilities")
+
+
+@app.route('/facilities/priority_update', methods=["POST"])
+def facilities_priority_update():
+    request_id = request.form.get("request_id")
+    new_priority = request.form.get("current_priority")
+    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_priority, request_id))
+    if result.rowcount == 0:
+        status_not_wanted = "completed"
+        cursor = g.conn.execute(
+            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
+            "tr.category "
+            "FROM requests r "
+            "JOIN raises r1 "
+            "ON r.requestid=r1.requestid "
+            "JOIN task_requests tr "
+            "ON r.requestid=tr.requestid "
+            "WHERE r.request_status <> %s", status_not_wanted)
+        task_requests = []
+        for result in cursor:
+            task_requests.append(result)
+        context = dict(task_requests=task_requests)
+        error = "Please check the Request ID"
+        return render_template("employeeHome_facilities.html", **context, error=error)
+    else:
+        return redirect("/facilities")
 
 
 if __name__ == "__main__":

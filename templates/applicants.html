@@ -11,7 +11,9 @@
   <h1>Welcome to International House! We are really glad that you chose us!</h1>
 
   <h2>Please fill in your details below and wait for Admissions to get back to you :</h2>
-
+  {% if error %}
+    <p><strong>Error:</strong> {{ error }}</p>
+  {% endif %}
   <form method="POST" action="/add_new_applicants">
       <p>Name: <input type="text" name="name" required></p>
       <p>Citizenship: <input type="text" name="citizenship" required></p>
