@@ -194,7 +194,17 @@ def add_new_FinanceRequest():
     g.conn.execute("INSERT INTO Finance_Requests(requestid,amount) VALUES (%s, %s)", args)
     args = (residentID, requestID, raisedon)
     g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
+    deptid = 4001
+    cursor = g.conn.execute('select empid from employees where deptid=%s', deptid)
+    empid = []
+    for row in cursor:
+        empid.append(row[0])
+    employee_id = random.choice(empid)
+    args = (requestID, deptid, employee_id)
+    g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
+
     return render_template("index.html")
+
 
 @app.route('/raiseTaskRequest')
 def raiseTaskRequest():
@@ -218,11 +228,42 @@ def add_new_TaskRequest():
     raisedon = today
     args = (requestID ,description , request_priority, request_status)
     g.conn.execute("INSERT INTO Requests(requestid,request_description, request_priority, request_status) VALUES (%s, %s, %s, %s)",args)
-    args=(requestID, category)
+    args = (requestID, category)
     g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
     args=(residentID,requestID,raisedon)
     g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
+    deptid = 4002
+    cursor = g.conn.execute('select empid from employees where deptid=%s',deptid)
+    empid = []
+    for row in cursor:
+        empid.append(row[0])
+    employee_id = random.choice(empid)
+    args = (requestID, deptid,employee_id)
+    g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)',args)
+
     return render_template("index.html")
+
+@app.route('/getTaskRequest')
+def getTaskRequest():
+    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",'1002')
+    requests = []
+    for result in cursor:
+        print(result)
+        requests.append(result)
+    context = dict(requests=requests)
+    return render_template("getTasksRequests.html", **context)
+
+@app.route('/getFinanceRequest')
+def getFinanceRequest():
+    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",'1002')
+    requests = []
+    for result in cursor:
+        print(result)
+        requests.append(result)
+    context = dict(requests=requests)
+    return render_template("getFinanceRequests.html", **context)
+
+
 
 @app.route('/applicants')
 def applicants():
