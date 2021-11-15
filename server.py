@@ -193,6 +193,103 @@ def index():
 #     else:
 #         return render_template("index.html")
 
+@app.route('/orderFood')
+def orderFood():
+    return render_template("orderFood.html")
+
+@app.route('/getItalian')
+def getItalian():
+    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+    dining_credit=0
+    for row in cursor:
+        dining_credit = int(row[0])
+    if dining_credit < 15:
+        return render_template("noDiningFunds.html")
+    item_name = 'Italian Meal'
+    bill_amount = 15
+    category = 'Vegetarian'
+    order_on = str(date.today())
+    residentid = session['id']
+    args = (item_name, bill_amount , category, order_on, residentid)
+    g.conn.execute(
+        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+        args)
+    dining_credit=dining_credit-15
+    g.conn.execute(
+        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+        (dining_credit, session['id']))
+    return render_template('yesDiningFunds.html')
+
+@app.route('/getSnacks')
+def getSnacks():
+    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+    dining_credit=0
+    for row in cursor:
+        dining_credit = int(row[0])
+    if dining_credit < 9:
+        return render_template("noDiningFunds.html")
+    item_name = 'Snacks'
+    bill_amount = 9
+    category = 'Vegetarian'
+    order_on = str(date.today())
+    residentid = session['id']
+    args = (item_name, bill_amount , category, order_on, residentid)
+    g.conn.execute(
+        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+        args)
+    dining_credit=dining_credit-9
+    g.conn.execute(
+        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+        (dining_credit, session['id']))
+    return render_template('yesDiningFunds.html')
+
+@app.route('/getIndianMeal')
+def getIndianMeal():
+    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+    dining_credit=0
+    for row in cursor:
+        dining_credit = int(row[0])
+    if dining_credit < 15:
+        return render_template("noDiningFunds.html")
+    item_name = 'Indian Meal'
+    bill_amount = 15
+    category = 'Vegetarian'
+    order_on = str(date.today())
+    residentid = session['id']
+    args = (item_name, bill_amount , category, order_on, residentid)
+    g.conn.execute(
+        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+        args)
+    dining_credit=dining_credit-15
+    g.conn.execute(
+        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+        (dining_credit, session['id']))
+    return render_template('yesDiningFunds.html')
+
+
+@app.route('/getChicken')
+def getChicken():
+    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+    dining_credit=0
+    for row in cursor:
+        dining_credit = int(row[0])
+    if dining_credit < 15:
+        return render_template("noDiningFunds.html")
+    item_name = 'Chicken Sandwich'
+    bill_amount = 15
+    category = 'Vegetarian'
+    order_on = str(date.today())
+    residentid = session['id']
+    args = (item_name, bill_amount , category, order_on, residentid)
+    g.conn.execute(
+        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+        args)
+    dining_credit=dining_credit-15
+    g.conn.execute(
+        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+        (dining_credit, session['id']))
+    return render_template('yesDiningFunds.html')
+
 
 @app.route('/raiseFinanceRequest')
 def raiseFinanceRequest():
@@ -200,8 +297,11 @@ def raiseFinanceRequest():
 
 @app.route('/newFinanceRequest', methods=['POST'])
 def add_new_FinanceRequest():
-    residentID = request.form['residentID']
-    requestID = request.form['requestID']
+    residentID = session["id"]
+    requestID = 0
+
+
+    requestID = requestID + 1
     description = request.form['financeCategory']
 
     request_priority = 1
@@ -211,10 +311,13 @@ def add_new_FinanceRequest():
     today = str(date.today())
     print(today)
     raisedon = today
-    args = (requestID, description, request_priority, request_status)
+    args = ( description, request_priority, request_status)
     g.conn.execute(
-        "INSERT INTO Requests(requestid,request_description, request_priority, request_status) VALUES (%s, %s, %s, %s)",
+        "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
         args)
+    cursor = g.conn.execute('select requestid from requests order by DESC limit 1')
+    for row in cursor:
+        requestID = int(row[0])
     args = (requestID, amount)
     g.conn.execute("INSERT INTO Finance_Requests(requestid,amount) VALUES (%s, %s)", args)
     args = (residentID, requestID, raisedon)
@@ -240,9 +343,13 @@ def raiseTaskRequest():
 
 
 @app.route('/newTaskRequest', methods=['POST'])
+@nocache
 def add_new_TaskRequest():
+    if (session["id"] is None):
+        return redirect('/')
+    requestID = 0
     residentID = session['id']
-    requestID = request.form['requestID']
+
     description = request.form['description']
     category = request.form['category']
     request_priority = 1
@@ -250,8 +357,13 @@ def add_new_TaskRequest():
 
     today = str(date.today())
     raisedon = today
-    args = (requestID ,description , request_priority, request_status)
-    g.conn.execute("INSERT INTO Requests(requestid,request_description, request_priority, request_status) VALUES (%s, %s, %s, %s)",args)
+    args = (description , request_priority, request_status)
+    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",args)
+    cursor = g.conn.execute('select requestid from requests order by DESC limit 1')
+    for row in cursor:
+        requestID = int(row[0])
+
+    requestID = requestID + 1
     args = (requestID, category)
     g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
     args=(residentID,requestID,raisedon)
@@ -268,8 +380,11 @@ def add_new_TaskRequest():
     return render_template("index.html")
 
 @app.route('/getTaskRequest')
+@nocache
 def getTaskRequest():
-    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",'1002')
+    if(session["id"] is None):
+        return redirect('/')
+    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",session["id"])
     requests = []
     for result in cursor:
         print(result)
@@ -278,8 +393,11 @@ def getTaskRequest():
     return render_template("getTasksRequests.html", **context)
 
 @app.route('/getFinanceRequest')
+@nocache
 def getFinanceRequest():
-    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",'1002')
+    if (session["id"] is None):
+        return redirect('/')
+    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",session["id"])
     requests = []
     for result in cursor:
         print(result)

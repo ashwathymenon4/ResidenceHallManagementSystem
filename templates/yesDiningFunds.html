@@ -10,10 +10,6 @@
         integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
 
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css' rel='stylesheet' />
-
-
 </head>
 <body>
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
@@ -28,64 +24,24 @@
                 <a class="nav-link" href="/residentHome">Home</a>
                 <a class="nav-link" href="/getTaskRequest">Task Requests</a>
                 <a class="nav-link" href="/getFinanceRequest">Finance Requests</a>
-                <a class="nav-link" href="/orderFood">Order Food</a>
+                <a class="nav-link" href="/residentDiningHall">Order Food</a>
                 <a class="nav-link" href="/residentDiningHall">Billing Summary</a>
 
             </div>
+
+
             <div class="navbar-nav ms-auto">
 
                     <a class="nav-link" href="/logout">Logout</a>
-
-
             </div>
         </div>
     </div>
 </nav>
 
-
-<div class="row">
-        <h1 class="text-center">New Finance Requests</h1>
-        <div class="col-md-6 offset-md-3">
-<form action="/newFinanceRequest" method="POST">
-
-
-                <div class="mb-3">
-                    <div class="form-group">
-                        Finance Request Description: <input list="financeCategory" name="financeCategory" required>
-                        <datalist id="financeCategory">
-                        <option value="Dodge Foundation Fund">Dodge Foundation Fund</option>
-                        <option value="The Haberman Fund">The Haberman Fund</option>
-                        <option value="Mitsui USA Foundation Fund">Mitsui USA Foundation Fund</option>
-                        <option value="Rent Payment">Rent Payment</option>
-                        <option value="Dining Fees">Dining Fees</option>
-                        </datalist>
-
-                    </div>
-
-                </div>
-
-
-
-                    <div class="mb-3">
-                    <label class="form-label" for="amount">Amount in $:</label>
-                    <input class="form-control" type="number" id="amount" name="amount" required>
-
-                    </div>
-
-                    <div class="mb-3">
-                        <button class="btn btn-success" type="submit">Raise Request</button>
-                    </div>
-
-
-            </form>
-            <div>
-
-</div>
-        </div>
-    </div>
-
-
-
+<br>
+<br>
+<br>
+<b>Order Placed Successfully</b>
 <br>
 <br>
 <br>
@@ -111,4 +67,3 @@
 
 
 </html>
-
