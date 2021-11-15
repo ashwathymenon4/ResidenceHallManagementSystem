@@ -10,7 +10,8 @@
         integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
 
-
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css' rel='stylesheet' />
 
 
 </head>
@@ -23,50 +24,61 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-                <a class="nav-link" href="/residentHome">Home</a>
-                <a class="nav-link" href="/getTaskRequest">Task Requests</a>
-                <a class="nav-link" href="/getFinanceRequest">Finance Requests</a>
-                <a class="nav-link" href="/residentDiningHall">Order Food</a>
-                <a class="nav-link" href="/residentDiningHall">Billing Summary</a>
-
-            </div>
             <div class="navbar-nav ms-auto">
 
                     <a class="nav-link" href="/logout">Logout</a>
-                    <a class="nav-link" href="/register">Register</a>
 
 
             </div>
         </div>
     </div>
 </nav>
+<h2>Hello!</h2>
+<h3>These are the pending finance requests.</h3>
+<table border="1" class="dataframe" frame=hsides rules=rows>
+    <thead>
+        <tr style="text-align: left;">
+            <th>Request ID</th>
+            <th>Resident ID</th>
+            <th>Request Description</th>
+            <th>Request Priority</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for n in pending_finance_requests %}
+        <tr>
+            <td>{{ n[0] }}</td>
+            <td>{{ n[1] }}</td>
+            <td>{{ n[2] }}</td>
+            <td>{{ n[3] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-<div class="row">
-    <div class="row">
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Raise a new Task Request</h5>
-        <p class="card-text"> Raise a task request related to any repairs for the room or common areas. The facilities team will get back to you as soon as possible.</p>
-        <a href="/raiseTaskRequest" class="btn btn-primary">Create a Task Request</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Raise a new Finance Request</h5>
-        <p class="card-text">Raise Financial Aid Requests or Finance Requests for room rent, dining fees etc. The Finance Team will get back to you as soon as possible.</p>
-        <a href="/raiseFinanceRequest" class="btn btn-primary">Create Finance Request</a>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
+
+<h3>Finance Request Approval Form</h3>
+  {% if error %}
+    <p><strong>Error:</strong> {{ error }}</p>
+  {% endif %}
+  <form method="POST" action="/finance/approved">
+      <p>Request ID: <input type="text" name="request_id" required></p>
+      <p>Approved Amount: <input type="text" name="amount" required></p>
+      <p><input type="submit" value="Approve"></p>
+  </form>
+
+<h3>Finance Request Rejection Form</h3>
+  {% if error1 %}
+    <p><strong>Error:</strong> {{ error1 }}</p>
+  {% endif %}
+  <form method="POST" action="/finance/rejected">
+      <p>Request ID: <input type="text" name="request_id" required></p>
+      <p><input type="submit" value="Reject"></p>
+  </form>
+
 <footer class="footer bg-dark py-3 mt-auto">
     <div class="container">
-        <span class="text-muted">&copy; ResidenceHall 2021</span>
+        <span class="text-muted">&copy;ResidenceHall 2021</span>
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"

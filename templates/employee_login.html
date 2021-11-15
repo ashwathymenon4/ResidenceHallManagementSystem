@@ -1,0 +1,22 @@
+<html>
+  <style>
+    body{
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+<body>
+  <h1>Log In</h1>
+  {% if error %}
+    <p><strong>Error:</strong> {{ error }}</p>
+  {% endif %}
+  <form method="POST" action="/employeeHome">
+      <p>Employee ID: <input type="text" name="employee_id" required></p>
+      <p>Password (SSN XXX-XX-XXXX): <input type="password" name="password" required></p>
+      <p><input type="submit" value="Login"></p>
+  </form>
+
+</body>
+
+</html>
