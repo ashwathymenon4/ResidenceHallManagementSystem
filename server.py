@@ -812,7 +812,7 @@ def admission_approved():
         pending_applications = []
         for result in cursor:
             pending_applications.append(result)
-        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE) "
+        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
                                              "FROM Rooms r LEFT JOIN Residents r1 ON "
                                              "r.room_number=r1.room_number")
         rooms = []
@@ -889,7 +889,7 @@ def admission_rejected():
         pending_applications = []
         for result in cursor:
             pending_applications.append(result)
-        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE) "
+        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
                                              "FROM Rooms r LEFT JOIN Residents r1 ON "
                                              "r.room_number=r1.room_number")
         rooms = []
