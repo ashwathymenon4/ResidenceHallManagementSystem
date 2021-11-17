@@ -194,6 +194,23 @@ def index():
 #     else:
 #         return render_template("index.html")
 
+@app.route('/getPaymentSummary')
+def getPaymentSummary():
+    cursor = g.conn.execute('select outstanding_rent, dining_hall_credit  from residents where residentid=%s', session['id'])
+    residentCurrentAmount = []
+    for row in cursor:
+        residentCurrentAmount.append(row)
+    cursor = g.conn.execute("select R1.request_description, R2.amount, R3.raisedon from requests R1, Finance_Requests "
+                            "R2,Raises R3 where R1.requestid=R2.requestid and R1.requestid=R3.requestid and "
+                            "R3.residentid=%s and (R1.request_description = 'Rent Payment' or "
+                            "R1.request_description='Dining Fees') and R1.request_status='Approved'",session['id'])
+    financeReq = []
+    for row in cursor:
+        financeReq.append(row)
+    context = dict(residentCurrentAmount=residentCurrentAmount, financeReq=financeReq)
+    return render_template('paymentSummary.html',**context)
+
+
 @app.route('/orderFood')
 def orderFood():
     return render_template("orderFood.html")
@@ -305,7 +322,7 @@ def add_new_FinanceRequest():
     residentID = session["id"]
     requestID = 0
 
-    requestID = requestID + 1
+
     description = request.form['financeCategory']
 
     request_priority = 1
@@ -319,7 +336,7 @@ def add_new_FinanceRequest():
     g.conn.execute(
         "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
         args)
-    cursor = g.conn.execute('select requestid from requests order by DESC limit 1')
+    cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
     for row in cursor:
         requestID = int(row[0])
     args = (requestID, amount)
@@ -335,7 +352,7 @@ def add_new_FinanceRequest():
     args = (requestID, deptid, employee_id)
     g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
 
-    return render_template("index.html")
+    return redirect("/getFinanceRequest")
 
 
 @app.route('/raiseTaskRequest')
@@ -360,14 +377,15 @@ def add_new_TaskRequest():
 
     today = str(date.today())
     raisedon = today
-    args = (description, request_priority, request_status)
-    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
-                   args)
-    cursor = g.conn.execute('select requestid from requests order by DESC limit 1')
+
+    args = (description , request_priority, request_status)
+    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",args)
+    cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
+
     for row in cursor:
         requestID = int(row[0])
 
-    requestID = requestID + 1
+
     args = (requestID, category)
     g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
     args = (residentID, requestID, raisedon)
@@ -381,7 +399,7 @@ def add_new_TaskRequest():
     args = (requestID, deptid, employee_id)
     g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
 
-    return render_template("index.html")
+    return redirect('/getTaskRequest')
 
 
 @app.route('/getTaskRequest')
