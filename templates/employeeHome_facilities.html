@@ -109,7 +109,7 @@
     </div>
 <h3>Update Task Priority</h3>
   {% if error %}
-    <p><strong>Error:</strong> {{ error }}</p>
+    <p><strong>Error:</strong> {{ error1 }}</p>
   {% endif %}
   <form method="POST" action="/facilities/priority_update">
       <p>Request ID: <input type="number" min="1" name="request_id" required></p>
