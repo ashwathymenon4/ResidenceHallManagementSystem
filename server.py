@@ -201,14 +201,15 @@ def getPaymentSummary():
         if (session["id"] is None):
             return redirect('/')
         cursor = g.conn.execute('select outstanding_rent, dining_hall_credit  from residents where residentid=%s',
-                            session['id'])
+                                session['id'])
         residentCurrentAmount = []
         for row in cursor:
             residentCurrentAmount.append(row)
-        cursor = g.conn.execute("select R1.request_description, R2.amount, R3.raisedon from requests R1, Finance_Requests "
-                            "R2,Raises R3 where R1.requestid=R2.requestid and R1.requestid=R3.requestid and "
-                            "R3.residentid=%s and (R1.request_description = 'Rent Payment' or "
-                            "R1.request_description='Dining Fees') and R1.request_status='Approved'", session['id'])
+        cursor = g.conn.execute(
+            "select R1.request_description, R2.amount, R3.raisedon from requests R1, Finance_Requests "
+            "R2,Raises R3 where R1.requestid=R2.requestid and R1.requestid=R3.requestid and "
+            "R3.residentid=%s and (R1.request_description = 'Rent Payment' or "
+            "R1.request_description='Dining Fees') and R1.request_status='Approved'", session['id'])
         financeReq = []
         for row in cursor:
             financeReq.append(row)
@@ -217,12 +218,14 @@ def getPaymentSummary():
     except:
         return redirect('/errorHandler')
 
+
 @app.route('/errorHandler')
 def errorHandler():
     try:
         return render_template("errorHandler.html")
     except:
         return redirect('/errorHandler')
+
 
 @app.route('/orderFood')
 @nocache
@@ -254,12 +257,12 @@ def getItalian():
         residentid = session['id']
         args = (item_name, bill_amount, category, order_on, residentid)
         g.conn.execute(
-        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount, category, order_on, residentid) VALUES ( %s, %s, %s, %s, %s)",
-        args)
+            "INSERT INTO Dining_Hall_Orders(item_name, bill_amount, category, order_on, residentid) VALUES ( %s, %s, %s, %s, %s)",
+            args)
         dining_credit = dining_credit - 15
         g.conn.execute(
-        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
-        (dining_credit, session['id']))
+            "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+            (dining_credit, session['id']))
         return render_template('yesDiningFunds.html')
     except:
         return redirect('/errorHandler')
@@ -295,7 +298,6 @@ def getSnacks():
         return redirect('/errorHandler')
 
 
-
 @app.route('/getIndianMeal')
 @nocache
 def getIndianMeal():
@@ -324,7 +326,6 @@ def getIndianMeal():
         return render_template('yesDiningFunds.html')
     except:
         return redirect('/errorHandler')
-
 
 
 @app.route('/getChicken')
@@ -357,7 +358,6 @@ def getChicken():
         return redirect('/errorHandler')
 
 
-
 @app.route('/raiseFinanceRequest')
 @nocache
 def raiseFinanceRequest():
@@ -367,7 +367,6 @@ def raiseFinanceRequest():
         return render_template("raiseFinanceRequest.html")
     except:
         return redirect('/errorHandler')
-
 
 
 @app.route('/newFinanceRequest', methods=['POST'])
@@ -441,8 +440,6 @@ def add_new_FinanceRequest():
         return redirect('/errorHandler')
 
 
-
-
 @app.route('/raiseTaskRequest')
 @nocache
 def raiseTaskRequest():
@@ -452,8 +449,6 @@ def raiseTaskRequest():
         return render_template("raiseTaskRequest.html")
     except:
         return redirect('/errorHandler')
-
-
 
 
 @app.route('/newTaskRequest', methods=['POST'])
@@ -500,8 +495,6 @@ def add_new_TaskRequest():
         return redirect('/errorHandler')
 
 
-
-
 @app.route('/getTaskRequest')
 @nocache
 def getTaskRequest():
@@ -521,8 +514,6 @@ def getTaskRequest():
         return render_template("getTasksRequests.html", **context)
     except:
         return redirect('/errorHandler')
-
-
 
 
 @app.route('/getFinanceRequest')
@@ -546,9 +537,6 @@ def getFinanceRequest():
         return redirect('/errorHandler')
 
 
-
-
-
 @app.route('/applicants')
 def applicants():
     try:
@@ -557,7 +545,6 @@ def applicants():
         return render_template("applicants.html", **context)
     except:
         return redirect('/errorHandler')
-
 
 
 # Example of adding new data to the database
@@ -606,11 +593,9 @@ def add():
         return redirect('/errorHandler')
 
 
-
 @app.route('/resident_login_page')
 def render_resident_login_page():
     return render_template("resident_login.html")
-
 
 
 @app.route('/residentHome', methods=["POST", "GET"])
@@ -646,11 +631,9 @@ def resident_login():
         return redirect('/errorHandler')
 
 
-
 @app.route('/employee_login_page')
 def render_employee_login_page():
     return render_template("employee_login.html")
-
 
 
 @app.route('/employeeHome', methods=["POST", "GET"])
@@ -696,7 +679,6 @@ def employee_login():
         return redirect('/errorHandler')
 
 
-
 @app.route('/logout', methods=["GET"])
 def logout():
     try:
@@ -706,26 +688,31 @@ def logout():
         return redirect('/errorHandler')
 
 
-
 @app.route('/admissions')
 @nocache
 def admissions_employee():
 
-        if (session["id"] is None):
-            return redirect('/')
-        status_needed = "Pending"
-        cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", status_needed)
-        pending_applications = []
-        for result in cursor:
-            pending_applications.append(result)
-        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
-                                             "FROM Rooms r LEFT JOIN Residents r1 ON "
-                                             "r.room_number=r1.room_number")
-        rooms = []
-        for result in cursor_vacant_rooms:
-            rooms.append(result)
-        context = dict(pending_applications=pending_applications, rooms=rooms)
-        return render_template("employeeHome_admissions.html", **context)
+        try:
+            if (session["id"] is None):
+                return redirect('/')
+            status_needed = "Pending"
+            cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", status_needed)
+            pending_applications = []
+            for result in cursor:
+                pending_applications.append(result)
+            cursor_vacant_rooms = g.conn.execute(
+                "SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
+                "FROM Rooms r LEFT JOIN Residents r1 ON "
+                "r.room_number=r1.room_number")
+            rooms = []
+            for result in cursor_vacant_rooms:
+                rooms.append(result)
+            context = dict(pending_applications=pending_applications, rooms=rooms)
+            return render_template("employeeHome_admissions.html", **context)
+        except:
+            return redirect('/errorHandler')
+
+
 
 
 
@@ -757,7 +744,6 @@ def finance_employee():
         return redirect('/errorHandler')
 
 
-
 @app.route('/facilities')
 @nocache
 def facilities_employee():
@@ -787,86 +773,93 @@ def facilities_employee():
         return redirect('/errorHandler')
 
 
-
 @app.route('/admissions/approved', methods=["POST"])
 @nocache
 def admission_approved():
+        try:
+            if (session["id"] is None):
+                return redirect('/')
+            application_id = request.form.get("application_id")
+            room_number = request.form.get("room_number")
+            new_status = 'Approved'
+            old_status = 'Pending'
+            all_application_id = g.conn.execute(
+                "SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
+                old_status)
+            all_room_number = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE)"
+                                             ", r.room_type FROM Rooms r LEFT JOIN Residents r1 ON "
+                                             "r.room_number=r1.room_number WHERE (r1.to_date<=CURRENT_DATE OR "
+                                             "r1.to_date IS NULL)")
+            application_id_list = []
+            room_number_list = []
+            for result in all_application_id:
+                application_id_list.append(int(result[0]))
+            for result in all_room_number:
+                room_number_list.append(int(result[0]))
+            cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
+            pending_applications = []
+            for result in cursor:
+                pending_applications.append(result)
+            cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE)"
+                                                 ", r.room_type FROM Rooms r LEFT JOIN Residents r1 ON "
+                                                 "r.room_number=r1.room_number")
+            rooms = []
+            for result in cursor_vacant_rooms:
+                rooms.append(result)
+            context = dict(pending_applications=pending_applications, rooms=rooms)
+            print(application_id)
+            print(application_id_list)
+            if (int(application_id) not in application_id_list) or (int(room_number) not in room_number_list):
+                error = "Please verify the details you have entered and check that the room is vacant as of the today"
+                return render_template("employeeHome_admissions.html", **context, error=error)
+            date_vacant_of_entered_room = g.conn.execute("SELECT COALESCE(r1.to_date, CURRENT_DATE) "
+                                                         "FROM Rooms r LEFT JOIN Residents r1 ON "
+                                                         "r.room_number=r1.room_number WHERE r.room_number=%s",
+                                                         room_number)
+            from_date_of_application_id = g.conn.execute("SELECT start_date FROM Applicants_ApprovedBy "
+                                                         "WHERE applicationid=%s", application_id)
+            date_room_vacant = ''
+            from_date_applicant = ''
+            for result in date_vacant_of_entered_room:
+                print(result)
+                date_room_vacant = result[0].strftime("%Y-%m-%d")
+            for result in from_date_of_application_id:
+                print(result)
+                from_date_applicant = result[0].strftime("%Y-%m-%d")
+            print(date_room_vacant)
+            print(from_date_applicant)
+            print(date_room_vacant > from_date_applicant)
+            if date_room_vacant > from_date_applicant:
+                error = "Please verify the details you have entered and check that the room in vacant currently " \
+                        "moves in"
+                return render_template("employeeHome_admissions.html", **context, error=error)
+            g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
+                           "WHERE applicationid=%s", (new_status, application_id))
+            cursor = g.conn.execute("SELECT applicationid, name, citizenship, passport_number, date_of_birth, gender, "
+                                    "start_date, end_date FROM Applicants_ApprovedBy WHERE applicationid=%s",
+                                    application_id)
+            fields = []
+            for result in cursor:
+                fields.append(result)
 
-        if (session["id"] is None):
-            return redirect('/')
-        application_id = request.form.get("application_id")
-        room_number = request.form.get("room_number")
-        new_status = 'Approved'
-        old_status = 'Pending'
-        all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
-                                            old_status)
-        all_room_number = g.conn.execute("SELECT room_number FROM Rooms")
-        application_id_list = []
-        room_number_list = []
-        for result in all_application_id:
-            application_id_list.append(int(result[0]))
-        for result in all_room_number:
-            room_number_list.append(int(result[0]))
-        cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
-        pending_applications = []
-        for result in cursor:
-            pending_applications.append(result)
-        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
-                                             "FROM Rooms r LEFT JOIN Residents r1 ON "
-                                             "r.room_number=r1.room_number")
-        rooms = []
-        for result in cursor_vacant_rooms:
-            rooms.append(result)
-        context = dict(pending_applications=pending_applications, rooms=rooms)
-        print(application_id)
-        print(application_id_list)
-        if (int(application_id) not in application_id_list) or (int(room_number) not in room_number_list):
-            error = "Please verify the details you have entered and check that the room will be vacant when the applicant " \
-                    "moves in"
-            return render_template("employeeHome_admissions.html", **context, error=error)
-        date_vacant_of_entered_room = g.conn.execute("SELECT COALESCE(r1.to_date, CURRENT_DATE) "
-                                                     "FROM Rooms r LEFT JOIN Residents r1 ON "
-                                                     "r.room_number=r1.room_number WHERE r.room_number=%s", room_number)
-        from_date_of_application_id = g.conn.execute("SELECT start_date FROM Applicants_ApprovedBy "
-                                                     "WHERE applicationid=%s", application_id)
-        date_room_vacant = ''
-        from_date_applicant = ''
-        for result in date_vacant_of_entered_room:
-            print(result)
-            date_room_vacant = result[0].strftime("%Y-%m-%d")
-        for result in from_date_of_application_id:
-            print(result)
-            from_date_applicant = result[0].strftime("%Y-%m-%d")
-        print(date_room_vacant)
-        print(from_date_applicant)
-        print(date_room_vacant > from_date_applicant)
-        if date_room_vacant > from_date_applicant:
-            error = "Please verify the details you have entered and check that the room will be vacant when the applicant " \
-                    "moves in"
-            return render_template("employeeHome_admissions.html", **context, error=error)
-        g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
-                       "WHERE applicationid=%s", (new_status, application_id))
-        cursor = g.conn.execute("SELECT applicationid, name, citizenship, passport_number, date_of_birth, gender, "
-                                "start_date, end_date FROM Applicants_ApprovedBy WHERE applicationid=%s",
-                                application_id)
-        fields = []
-        for result in cursor:
-            fields.append(result)
+            room_rent_cursor = g.conn.execute("SELECT room_cost FROM rooms WHERE room_number=%s", room_number)
+            room_rent = []
+            for result in room_rent_cursor:
+                room_rent.append(result)
 
-        room_rent_cursor = g.conn.execute("SELECT room_cost FROM rooms WHERE room_number=%s", room_number)
-        room_rent = []
-        for result in room_rent_cursor:
-            room_rent.append(result)
+            outstanding_rent = int(room_rent[0][0])
 
-        outstanding_rent = int(room_rent[0][0])
+            args = (
+                fields[0][0], fields[0][1], fields[0][2], fields[0][3], fields[0][4], fields[0][5], 500, fields[0][6],
+                fields[0][7], room_number, outstanding_rent)
+            g.conn.execute(
+                "INSERT INTO Residents (residentid, name, citizenship, passport_number, date_of_birth, gender, "
+                "dining_hall_credit, from_date, to_date, room_number, outstanding_rent) VALUES (%s, %s, %s, %s, "
+                "%s, %s, %s, %s, %s, %s, %s)", args)
+            return redirect("/admissions")
+        except:
+            return redirect('/errorHandler')
 
-        args = (
-            fields[0][0], fields[0][1], fields[0][2], fields[0][3], fields[0][4], fields[0][5], 500, fields[0][6],
-            fields[0][7], room_number, outstanding_rent)
-        g.conn.execute("INSERT INTO Residents (residentid, name, citizenship, passport_number, date_of_birth, gender, "
-                       "dining_hall_credit, from_date, to_date, room_number, outstanding_rent) VALUES (%s, %s, %s, %s, "
-                       "%s, %s, %s, %s, %s, %s, %s)", args)
-        return redirect("/admissions")
 
 
 
@@ -908,7 +901,6 @@ def admission_rejected():
         return redirect('/errorHandler')
 
 
-
 @app.route("/finance/approved", methods=["POST"])
 @nocache
 def finance_approved():
@@ -945,7 +937,6 @@ def finance_approved():
         return redirect('/errorHandler')
 
 
-
 @app.route('/finance/rejected', methods=["POST"])
 @nocache
 def finance_rejected():
@@ -980,7 +971,6 @@ def finance_rejected():
         return redirect('/errorHandler')
 
 
-
 @app.route('/facilities/status_update', methods=["POST"])
 @nocache
 def facilities_status_update():
@@ -1013,7 +1003,6 @@ def facilities_status_update():
             return redirect("/facilities")
     except:
         return redirect('/errorHandler')
-
 
 
 @app.route('/facilities/priority_update', methods=["POST"])
@@ -1051,7 +1040,6 @@ def facilities_priority_update():
         return redirect('/errorHandler')
 
 
-
 @app.route('/employeeDetails')
 def employeeDetails():
     try:
@@ -1069,8 +1057,6 @@ def employeeDetails():
             return render_template('employeeDetails_facilities.html', **context)
     except:
         return redirect('/errorHandler')
-
-
 
 
 if __name__ == "__main__":
