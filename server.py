@@ -197,10 +197,11 @@ def index():
 def orderFood():
     return render_template("orderFood.html")
 
+
 @app.route('/getItalian')
 def getItalian():
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit=0
+    dining_credit = 0
     for row in cursor:
         dining_credit = int(row[0])
     if dining_credit < 15:
@@ -210,20 +211,21 @@ def getItalian():
     category = 'Vegetarian'
     order_on = str(date.today())
     residentid = session['id']
-    args = (item_name, bill_amount , category, order_on, residentid)
+    args = (item_name, bill_amount, category, order_on, residentid)
     g.conn.execute(
-        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount, category, order_on, residentid) VALUES ( %s, %s, %s, %s, %s)",
         args)
-    dining_credit=dining_credit-15
+    dining_credit = dining_credit - 15
     g.conn.execute(
         "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
         (dining_credit, session['id']))
     return render_template('yesDiningFunds.html')
 
+
 @app.route('/getSnacks')
 def getSnacks():
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit=0
+    dining_credit = 0
     for row in cursor:
         dining_credit = int(row[0])
     if dining_credit < 9:
@@ -233,20 +235,21 @@ def getSnacks():
     category = 'Vegetarian'
     order_on = str(date.today())
     residentid = session['id']
-    args = (item_name, bill_amount , category, order_on, residentid)
+    args = (item_name, bill_amount, category, order_on, residentid)
     g.conn.execute(
         "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
         args)
-    dining_credit=dining_credit-9
+    dining_credit = dining_credit - 9
     g.conn.execute(
         "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
         (dining_credit, session['id']))
     return render_template('yesDiningFunds.html')
 
+
 @app.route('/getIndianMeal')
 def getIndianMeal():
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit=0
+    dining_credit = 0
     for row in cursor:
         dining_credit = int(row[0])
     if dining_credit < 15:
@@ -256,11 +259,11 @@ def getIndianMeal():
     category = 'Vegetarian'
     order_on = str(date.today())
     residentid = session['id']
-    args = (item_name, bill_amount , category, order_on, residentid)
+    args = (item_name, bill_amount, category, order_on, residentid)
     g.conn.execute(
         "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
         args)
-    dining_credit=dining_credit-15
+    dining_credit = dining_credit - 15
     g.conn.execute(
         "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
         (dining_credit, session['id']))
@@ -270,7 +273,7 @@ def getIndianMeal():
 @app.route('/getChicken')
 def getChicken():
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit=0
+    dining_credit = 0
     for row in cursor:
         dining_credit = int(row[0])
     if dining_credit < 15:
@@ -280,11 +283,11 @@ def getChicken():
     category = 'Vegetarian'
     order_on = str(date.today())
     residentid = session['id']
-    args = (item_name, bill_amount , category, order_on, residentid)
+    args = (item_name, bill_amount, category, order_on, residentid)
     g.conn.execute(
         "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
         args)
-    dining_credit=dining_credit-15
+    dining_credit = dining_credit - 15
     g.conn.execute(
         "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
         (dining_credit, session['id']))
@@ -295,11 +298,11 @@ def getChicken():
 def raiseFinanceRequest():
     return render_template("raiseFinanceRequest.html")
 
+
 @app.route('/newFinanceRequest', methods=['POST'])
 def add_new_FinanceRequest():
     residentID = session["id"]
     requestID = 0
-
 
     requestID = requestID + 1
     description = request.form['financeCategory']
@@ -311,7 +314,7 @@ def add_new_FinanceRequest():
     today = str(date.today())
     print(today)
     raisedon = today
-    args = ( description, request_priority, request_status)
+    args = (description, request_priority, request_status)
     g.conn.execute(
         "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
         args)
@@ -341,7 +344,6 @@ def raiseTaskRequest():
     return render_template("raiseTaskRequest.html", **context)
 
 
-
 @app.route('/newTaskRequest', methods=['POST'])
 @nocache
 def add_new_TaskRequest():
@@ -357,8 +359,9 @@ def add_new_TaskRequest():
 
     today = str(date.today())
     raisedon = today
-    args = (description , request_priority, request_status)
-    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",args)
+    args = (description, request_priority, request_status)
+    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
+                   args)
     cursor = g.conn.execute('select requestid from requests order by DESC limit 1')
     for row in cursor:
         requestID = int(row[0])
@@ -366,25 +369,28 @@ def add_new_TaskRequest():
     requestID = requestID + 1
     args = (requestID, category)
     g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
-    args=(residentID,requestID,raisedon)
+    args = (residentID, requestID, raisedon)
     g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
     deptid = 4002
-    cursor = g.conn.execute('select empid from employees where deptid=%s',deptid)
+    cursor = g.conn.execute('select empid from employees where deptid=%s', deptid)
     empid = []
     for row in cursor:
         empid.append(row[0])
     employee_id = random.choice(empid)
-    args = (requestID, deptid,employee_id)
-    g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)',args)
+    args = (requestID, deptid, employee_id)
+    g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
 
     return render_template("index.html")
+
 
 @app.route('/getTaskRequest')
 @nocache
 def getTaskRequest():
-    if(session["id"] is None):
+    if (session["id"] is None):
         return redirect('/')
-    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",session["id"])
+    cursor = g.conn.execute(
+        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",
+        session["id"])
     requests = []
     for result in cursor:
         print(result)
@@ -392,19 +398,21 @@ def getTaskRequest():
     context = dict(requests=requests)
     return render_template("getTasksRequests.html", **context)
 
+
 @app.route('/getFinanceRequest')
 @nocache
 def getFinanceRequest():
     if (session["id"] is None):
         return redirect('/')
-    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",session["id"])
+    cursor = g.conn.execute(
+        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",
+        session["id"])
     requests = []
     for result in cursor:
         print(result)
         requests.append(result)
     context = dict(requests=requests)
     return render_template("getFinanceRequests.html", **context)
-
 
 
 @app.route('/applicants')
@@ -426,20 +434,25 @@ def add():
     start_date = request.form['start_date']
     end_date = request.form['end_date']
     deptid = 4000
+    print(start_date)
+    print(end_date)
+    print(start_date > end_date)
     requested_on = str(date.today())
     processed_on = None
-    approval_status = None
-    args: Tuple[str, str, str, str, str, str, str, str, str, str, str, Any] = (
+    args = (
         name, citizenship, passport_number, date_of_birth, gender, room_preference, start_date, end_date, processed_on,
-        requested_on, approval_status, deptid)
+        requested_on, deptid
+    )
     try:
         g.conn.execute('INSERT INTO Applicants_ApprovedBy(name, citizenship, passport_number, date_of_birth, gender, '
-                       'room_preference, start_date, end_date, processed_on, requested_on, approval_status, '
-                       'deptid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
+                       'room_preference, start_date, end_date, processed_on, requested_on, '
+                       'deptid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
                        , args)
     except:
+        today = str(date.today())
+        context = dict(todays_date=today)
         error = "Please check that end date should be greater than start date"
-        return render_template("applicants.html", error=error)
+        return render_template("applicants.html", **context, error=error)
     args1 = (citizenship, passport_number)
     cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE citizenship=%s AND "
                             "passport_number=%s", args1)
@@ -533,7 +546,7 @@ def logout():
 
 @app.route('/admissions')
 def admissions_employee():
-    status_needed = "pending"
+    status_needed = "Pending"
     cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", status_needed)
     pending_applications = []
     for result in cursor:
@@ -550,7 +563,7 @@ def admissions_employee():
 
 @app.route('/finance')
 def finance_employee():
-    status_needed = "pending"
+    status_needed = "Pending"
     cursor = g.conn.execute(
         "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
         "FROM requests r "
@@ -568,8 +581,8 @@ def finance_employee():
 
 @app.route('/facilities')
 def facilities_employee():
-    status_not_wanted_1 = "complete"
-    status_not_wanted_2 = "completed"
+    status_not_wanted_1 = "Complete"
+    status_not_wanted_2 = "Completed"
     cursor = g.conn.execute(
         "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category "
         "FROM requests r "
@@ -589,8 +602,8 @@ def facilities_employee():
 def admission_approved():
     application_id = request.form.get("application_id")
     room_number = request.form.get("room_number")
-    new_status = 'approved'
-    old_status = 'pending'
+    new_status = 'Approved'
+    old_status = 'Pending'
     all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
                                         old_status)
     all_room_number = g.conn.execute("SELECT room_number FROM Rooms")
@@ -657,7 +670,7 @@ def admission_approved():
 @app.route('/admissions/rejected', methods=['POST'])
 def admission_rejected():
     application_id = request.form.get("application_id")
-    old_status = "pending"
+    old_status = "Pending"
     all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
                                         old_status)
     new_status = "rejected"
@@ -689,11 +702,11 @@ def admission_rejected():
 def finance_approved():
     request_id = request.form.get("request_id")
     amount = request.form.get("amount")
-    new_status = "approved"
+    new_status = "Approved"
     result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
     result = g.conn.execute("UPDATE Finance_Requests SET amount=%s WHERE requestid=%s", (amount, request_id))
     if result.rowcount == 0:
-        status_needed = "pending"
+        status_needed = "Pending"
         cursor = g.conn.execute(
             "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
             "FROM requests r "
@@ -720,7 +733,7 @@ def finance_rejected():
     if result.rowcount != 0:
         return redirect("/finance")
     else:
-        status_needed = "pending"
+        status_needed = "Pending"
         cursor = g.conn.execute(
             "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
             "FROM requests r "
