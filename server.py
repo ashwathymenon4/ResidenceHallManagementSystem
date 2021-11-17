@@ -528,7 +528,7 @@ def add():
     except:
         today = str(date.today())
         context = dict(todays_date=today)
-        error = "Please check that end date should be greater than start date"
+        error = "Please check your input and remember that end date should be greater than start date."
         return render_template("applicants.html", **context, error=error)
     args1 = (citizenship, passport_number)
     cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE citizenship=%s AND "
@@ -542,9 +542,12 @@ def add():
 
 @app.route('/resident_login_page')
 def render_resident_login_page():
-    if (session["id"] is not None):
-        return redirect('/')
-    return render_template("resident_login.html")
+
+    if session["id"] is not None:
+        return redirect("/")
+    else:
+        return render_template("resident_login.html")
+
 
 
 @app.route('/residentHome', methods=["POST", "GET"])
@@ -604,7 +607,12 @@ def employee_login():
         for result in cursor:
             ssn.append(result)
         print(ssn)
-        if ssn[0][0] == password:
+        cursor1 = g.conn.execute("SELECT deptid FROM Employees WHERE empid=%s", employee_id)
+        deptid = []
+        for result in cursor1:
+            deptid.append(result)
+        session["deptid"] = deptid[0][0]
+        if (ssn[0][0] == password) and (deptid[0][0] in [4000, 4001, 4002]):
             session["id"] = employee_id
         else:
             error = 'Invalid username or password. Please try again!'
@@ -636,7 +644,7 @@ def admissions_employee():
     pending_applications = []
     for result in cursor:
         pending_applications.append(result)
-    cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE) "
+    cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
                                          "FROM Rooms r LEFT JOIN Residents r1 ON "
                                          "r.room_number=r1.room_number")
     rooms = []
@@ -652,14 +660,17 @@ def finance_employee():
     if (session["id"] is None):
         return redirect('/')
     status_needed = "Pending"
+    args = (status_needed, session["id"])
     cursor = g.conn.execute(
-        "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
+        "SELECT r.requestid, r1.residentid, r.request_description, r1.raisedon "
         "FROM requests r "
         "JOIN raises r1 "
         "ON r.requestid=r1.requestid "
         "JOIN finance_requests fr "
         "ON r.requestid=fr.requestid "
-        "WHERE r.request_status=%s", status_needed)
+        "JOIN managed_by m "
+        "ON m.requestid=r.requestid "
+        "WHERE r.request_status=%s AND m.empid=%s", args)
     pending_finance_requests = []
     for result in cursor:
         pending_finance_requests.append(result)
@@ -670,18 +681,23 @@ def finance_employee():
 @app.route('/facilities')
 @nocache
 def facilities_employee():
+
     if (session["id"] is None):
         return redirect('/')
-    status_not_wanted_1 = "Complete"
-    status_not_wanted_2 = "Completed"
+
+    status_not_wanted = "Complete"
+    args = (status_not_wanted, session["id"])
+
     cursor = g.conn.execute(
-        "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category "
-        "FROM requests r "
+        "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category, "
+        "r1.raisedon FROM requests r "
         "JOIN raises r1 "
         "ON r.requestid=r1.requestid "
         "JOIN task_requests tr "
         "ON r.requestid=tr.requestid "
-        "WHERE r.request_status <> %s OR r.request_status <> %s", (status_not_wanted_1, status_not_wanted_2))
+        "JOIN managed_by m "
+        "ON m.requestid=r.requestid "
+        "WHERE r.request_status <> %s AND m.empid=%s", args)
     task_requests = []
     for result in cursor:
         task_requests.append(result)
@@ -756,11 +772,9 @@ def admission_approved():
     room_rent = []
     for result in room_rent_cursor:
         room_rent.append(result)
-    format_of_date = '%Y-%m-%d'
-    from_date_new = datetime.datetime.strptime(fields[0][6], format_of_date)
-    to_date_new = datetime.datetime.strptime(fields[0][7], format_of_date)
-    num_months = (((to_date_new.year - from_date_new.year) * 12) + (to_date_new.month - from_date_new.month)) + 1
-    outstanding_rent = num_months * room_rent[0]
+
+    outstanding_rent = int(room_rent[0][0])
+
     args = (
         fields[0][0], fields[0][1], fields[0][2], fields[0][3], fields[0][4], fields[0][5], 500, fields[0][6],
         fields[0][7], room_number, outstanding_rent)
@@ -899,7 +913,7 @@ def facilities_priority_update():
         return redirect('/')
     request_id = request.form.get("request_id")
     new_priority = request.form.get("current_priority")
-    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_priority, request_id))
+    result = g.conn.execute("UPDATE Requests SET request_priority=%s WHERE requestid=%s", (new_priority, request_id))
     if result.rowcount == 0:
         status_not_wanted_1 = "complete"
         status_not_wanted_2 = "completed"
@@ -920,6 +934,23 @@ def facilities_priority_update():
         return render_template("employeeHome_facilities.html", **context, error=error)
     else:
         return redirect("/facilities")
+
+
+@app.route('/employeeDetails')
+def employeeDetails():
+    cursor = g.conn.execute("SELECT * FROM Employees E JOIN Departments D ON E.deptid=D.deptid WHERE E.empid=%s",
+                            session["id"])
+    data = []
+    for result in cursor:
+        data.append(result)
+    context = dict(data=data)
+    if session["deptid"] == 4000:
+        return render_template('employeeDetails_admission.html', **context)
+    elif session["deptid"] == 4001:
+        return render_template('employeeDetails_finance.html', **context)
+    else:
+        return render_template('employeeDetails_facilities.html', **context)
+
 
 
 if __name__ == "__main__":
