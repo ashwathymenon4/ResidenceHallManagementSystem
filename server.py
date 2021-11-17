@@ -197,347 +197,414 @@ def index():
 @app.route('/getPaymentSummary')
 @nocache
 def getPaymentSummary():
-    if (session["id"] is None):
-        return redirect('/')
-    cursor = g.conn.execute('select outstanding_rent, dining_hall_credit  from residents where residentid=%s',
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        cursor = g.conn.execute('select outstanding_rent, dining_hall_credit  from residents where residentid=%s',
                             session['id'])
-    residentCurrentAmount = []
-    for row in cursor:
-        residentCurrentAmount.append(row)
-    cursor = g.conn.execute("select R1.request_description, R2.amount, R3.raisedon from requests R1, Finance_Requests "
+        residentCurrentAmount = []
+        for row in cursor:
+            residentCurrentAmount.append(row)
+        cursor = g.conn.execute("select R1.request_description, R2.amount, R3.raisedon from requests R1, Finance_Requests "
                             "R2,Raises R3 where R1.requestid=R2.requestid and R1.requestid=R3.requestid and "
                             "R3.residentid=%s and (R1.request_description = 'Rent Payment' or "
                             "R1.request_description='Dining Fees') and R1.request_status='Approved'", session['id'])
-    financeReq = []
-    for row in cursor:
-        financeReq.append(row)
-    context = dict(residentCurrentAmount=residentCurrentAmount, financeReq=financeReq)
-    return render_template('paymentSummary.html', **context)
+        financeReq = []
+        for row in cursor:
+            financeReq.append(row)
+        context = dict(residentCurrentAmount=residentCurrentAmount, financeReq=financeReq)
+        return render_template('paymentSummary.html', **context)
+    except:
+        return redirect('/errorHandler')
 
+@app.route('/errorHandler')
+def errorHandler():
+    try:
+        return render_template("errorHandler.html")
+    except:
+        return redirect('/errorHandler')
 
 @app.route('/orderFood')
 @nocache
 def orderFood():
-    if (session["id"] is None):
-        return redirect('/')
-    return render_template("orderFood.html")
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        return render_template("orderFood.html")
+    except:
+        return redirect('/errorHandler')
 
 
 @app.route('/getItalian')
 @nocache
 def getItalian():
-    if (session["id"] is None):
-        return redirect('/')
-    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit = 0
-    for row in cursor:
-        dining_credit = int(row[0])
-    if dining_credit < 15:
-        return render_template("noDiningFunds.html")
-    item_name = 'Italian Meal'
-    bill_amount = 15
-    category = 'Vegetarian'
-    order_on = str(date.today())
-    residentid = session['id']
-    args = (item_name, bill_amount, category, order_on, residentid)
-    g.conn.execute(
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+        dining_credit = 0
+        for row in cursor:
+            dining_credit = int(row[0])
+        if dining_credit < 15:
+            return render_template("noDiningFunds.html")
+        item_name = 'Italian Meal'
+        bill_amount = 15
+        category = 'Vegetarian'
+        order_on = str(date.today())
+        residentid = session['id']
+        args = (item_name, bill_amount, category, order_on, residentid)
+        g.conn.execute(
         "INSERT INTO Dining_Hall_Orders(item_name, bill_amount, category, order_on, residentid) VALUES ( %s, %s, %s, %s, %s)",
         args)
-    dining_credit = dining_credit - 15
-    g.conn.execute(
+        dining_credit = dining_credit - 15
+        g.conn.execute(
         "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
         (dining_credit, session['id']))
-    return render_template('yesDiningFunds.html')
+        return render_template('yesDiningFunds.html')
+    except:
+        return redirect('/errorHandler')
 
 
 @app.route('/getSnacks')
 @nocache
 def getSnacks():
-    if (session["id"] is None):
-        return redirect('/')
-    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit = 0
-    for row in cursor:
-        dining_credit = int(row[0])
-    if dining_credit < 9:
-        return render_template("noDiningFunds.html")
-    item_name = 'Snacks'
-    bill_amount = 9
-    category = 'Vegetarian'
-    order_on = str(date.today())
-    residentid = session['id']
-    args = (item_name, bill_amount, category, order_on, residentid)
-    g.conn.execute(
-        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
-        args)
-    dining_credit = dining_credit - 9
-    g.conn.execute(
-        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
-        (dining_credit, session['id']))
-    return render_template('yesDiningFunds.html')
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+        dining_credit = 0
+        for row in cursor:
+            dining_credit = int(row[0])
+        if dining_credit < 9:
+            return render_template("noDiningFunds.html")
+        item_name = 'Snacks'
+        bill_amount = 9
+        category = 'Vegetarian'
+        order_on = str(date.today())
+        residentid = session['id']
+        args = (item_name, bill_amount, category, order_on, residentid)
+        g.conn.execute(
+            "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+            args)
+        dining_credit = dining_credit - 9
+        g.conn.execute(
+            "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+            (dining_credit, session['id']))
+        return render_template('yesDiningFunds.html')
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/getIndianMeal')
 @nocache
 def getIndianMeal():
-    if (session["id"] is None):
-        return redirect('/')
-    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit = 0
-    for row in cursor:
-        dining_credit = int(row[0])
-    if dining_credit < 15:
-        return render_template("noDiningFunds.html")
-    item_name = 'Indian Meal'
-    bill_amount = 15
-    category = 'Vegetarian'
-    order_on = str(date.today())
-    residentid = session['id']
-    args = (item_name, bill_amount, category, order_on, residentid)
-    g.conn.execute(
-        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
-        args)
-    dining_credit = dining_credit - 15
-    g.conn.execute(
-        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
-        (dining_credit, session['id']))
-    return render_template('yesDiningFunds.html')
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+        dining_credit = 0
+        for row in cursor:
+            dining_credit = int(row[0])
+        if dining_credit < 15:
+            return render_template("noDiningFunds.html")
+        item_name = 'Indian Meal'
+        bill_amount = 15
+        category = 'Vegetarian'
+        order_on = str(date.today())
+        residentid = session['id']
+        args = (item_name, bill_amount, category, order_on, residentid)
+        g.conn.execute(
+            "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+            args)
+        dining_credit = dining_credit - 15
+        g.conn.execute(
+            "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+            (dining_credit, session['id']))
+        return render_template('yesDiningFunds.html')
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/getChicken')
 @nocache
 def getChicken():
-    if (session["id"] is None):
-        return redirect('/')
-    cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
-    dining_credit = 0
-    for row in cursor:
-        dining_credit = int(row[0])
-    if dining_credit < 15:
-        return render_template("noDiningFunds.html")
-    item_name = 'Chicken Sandwich'
-    bill_amount = 15
-    category = 'Vegetarian'
-    order_on = str(date.today())
-    residentid = session['id']
-    args = (item_name, bill_amount, category, order_on, residentid)
-    g.conn.execute(
-        "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
-        args)
-    dining_credit = dining_credit - 15
-    g.conn.execute(
-        "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
-        (dining_credit, session['id']))
-    return render_template('yesDiningFunds.html')
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+        dining_credit = 0
+        for row in cursor:
+            dining_credit = int(row[0])
+        if dining_credit < 15:
+            return render_template("noDiningFunds.html")
+        item_name = 'Chicken Sandwich'
+        bill_amount = 15
+        category = 'Vegetarian'
+        order_on = str(date.today())
+        residentid = session['id']
+        args = (item_name, bill_amount, category, order_on, residentid)
+        g.conn.execute(
+            "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
+            args)
+        dining_credit = dining_credit - 15
+        g.conn.execute(
+            "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
+            (dining_credit, session['id']))
+        return render_template('yesDiningFunds.html')
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/raiseFinanceRequest')
 @nocache
 def raiseFinanceRequest():
-    if (session["id"] is None):
-        return redirect('/')
-    return render_template("raiseFinanceRequest.html")
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        return render_template("raiseFinanceRequest.html")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/newFinanceRequest', methods=['POST'])
 @nocache
 def add_new_FinanceRequest():
-    if (session["id"] is None):
-        return redirect('/')
-    residentID = session["id"]
-    requestID = 0
-    description = request.form['financeCategory']
-    request_priority = 1
-    amount = 0
-    today = str(date.today())
-    raisedon = today
-    outstanding = 0
-    request_status = 'Pending'
-    if description == 'Rent Payment':
-        print('Room Rent')
-        cursor = g.conn.execute('select outstanding_rent from residents where residentid=%s', session['id'])
-        for row in cursor:
-            outstanding = int(row[0])
-        print(outstanding)
-        if outstanding == 0:
-            request_status = 'Rejected'
-        else:
-            args = (0, session['id'])
-            g.conn.execute('update residents set outstanding_rent=%s where residentid=%s', args)
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        residentID = session["id"]
+        requestID = 0
+        description = request.form['financeCategory']
+        request_priority = 1
+        amount = 0
+        today = str(date.today())
+        raisedon = today
+        outstanding = 0
+        request_status = 'Pending'
+        if description == 'Rent Payment':
+            print('Room Rent')
+            cursor = g.conn.execute('select outstanding_rent from residents where residentid=%s', session['id'])
+            for row in cursor:
+                outstanding = int(row[0])
+            print(outstanding)
+            if outstanding == 0:
+                request_status = 'Rejected'
+            else:
+                args = (0, session['id'])
+                g.conn.execute('update residents set outstanding_rent=%s where residentid=%s', args)
+                request_status = 'Approved'
+
+        if description == 'Rent Payment':
+            amount = outstanding
+
+        if description == 'Dining Fees':
+            amount = 100
+            dining_hall = 0
+            cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+            for row in cursor:
+                dining_hall = row[0]
+            dining_hall = amount + dining_hall
+            args = (dining_hall, session['id'])
+            g.conn.execute('update residents set dining_hall_credit=%s where residentid=%s', args)
             request_status = 'Approved'
 
-    if description == 'Rent Payment':
-        amount = outstanding
+        today = str(date.today())
+        print(today)
+        raisedon = today
 
-    if description == 'Dining Fees':
-        amount = 100
-        dining_hall = 0
-        cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+        args = (description, request_priority, request_status)
+        g.conn.execute(
+            "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
+            args)
+        cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
         for row in cursor:
-            dining_hall = row[0]
-        dining_hall = amount + dining_hall
-        args = (dining_hall, session['id'])
-        g.conn.execute('update residents set dining_hall_credit=%s where residentid=%s', args)
-        request_status = 'Approved'
+            requestID = int(row[0])
+        args = (requestID, amount)
+        g.conn.execute("INSERT INTO Finance_Requests(requestid,amount) VALUES (%s, %s)", args)
+        args = (residentID, requestID, raisedon)
+        g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
+        deptid = 4001
+        cursor = g.conn.execute('select empid from employees where deptid=%s', deptid)
+        empid = []
+        for row in cursor:
+            empid.append(row[0])
+        employee_id = random.choice(empid)
+        args = (requestID, deptid, employee_id)
+        g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
 
-    today = str(date.today())
-    print(today)
-    raisedon = today
+        return redirect("/getFinanceRequest")
+    except:
+        return redirect('/errorHandler')
 
-    args = (description, request_priority, request_status)
-    g.conn.execute(
-        "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
-        args)
-    cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
-    for row in cursor:
-        requestID = int(row[0])
 
-    args = (requestID, amount)
-    g.conn.execute("INSERT INTO Finance_Requests(requestid,amount) VALUES (%s, %s)", args)
-    args = (residentID, requestID, raisedon)
-    g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
-    deptid = 4001
-    cursor = g.conn.execute('select empid from employees where deptid=%s', deptid)
-    empid = []
-    for row in cursor:
-        empid.append(row[0])
-    employee_id = random.choice(empid)
-    args = (requestID, deptid, employee_id)
-    g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
-
-    return redirect("/getFinanceRequest")
 
 
 @app.route('/raiseTaskRequest')
 @nocache
 def raiseTaskRequest():
-    if (session["id"] is None):
-        return redirect('/')
-    return render_template("raiseTaskRequest.html")
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        return render_template("raiseTaskRequest.html")
+    except:
+        return redirect('/errorHandler')
+
+
 
 
 @app.route('/newTaskRequest', methods=['POST'])
 @nocache
 def add_new_TaskRequest():
-    if (session["id"] is None):
-        return redirect('/')
-    requestID = 0
-    residentID = session['id']
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        requestID = 0
+        residentID = session['id']
 
-    description = request.form['description']
-    category = request.form['taskCategory']
-    request_priority = 1
-    request_status = 'Pending'
+        description = request.form['description']
+        category = request.form['taskCategory']
+        request_priority = 1
+        request_status = 'Pending'
 
-    today = str(date.today())
-    raisedon = today
+        today = str(date.today())
+        raisedon = today
 
-    args = (description, request_priority, request_status)
-    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
-                   args)
-    cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
+        args = (description, request_priority, request_status)
+        g.conn.execute(
+            "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
+            args)
+        cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
 
-    for row in cursor:
-        requestID = int(row[0])
+        for row in cursor:
+            requestID = int(row[0])
 
-    args = (requestID, category)
-    g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
-    args = (residentID, requestID, raisedon)
-    g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
-    deptid = 4002
-    cursor = g.conn.execute('select empid from employees where deptid=%s', deptid)
-    empid = []
-    for row in cursor:
-        empid.append(row[0])
-    employee_id = random.choice(empid)
-    args = (requestID, deptid, employee_id)
-    g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
+        args = (requestID, category)
+        g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
+        args = (residentID, requestID, raisedon)
+        g.conn.execute("INSERT INTO Raises(residentid ,requestid, raisedon ) VALUES (%s, %s, %s)", args)
+        deptid = 4002
+        cursor = g.conn.execute('select empid from employees where deptid=%s', deptid)
+        empid = []
+        for row in cursor:
+            empid.append(row[0])
+        employee_id = random.choice(empid)
+        args = (requestID, deptid, employee_id)
+        g.conn.execute('INSERT INTO Managed_By(requestid,deptid,empid) VALUES (%s, %s, %s)', args)
 
-    return redirect('/getTaskRequest')
+        return redirect('/getTaskRequest')
+    except:
+        return redirect('/errorHandler')
+
+
 
 
 @app.route('/getTaskRequest')
 @nocache
 def getTaskRequest():
-    if (session["id"] is None):
-        return redirect('/')
+    try:
+        if (session["id"] is None):
+            return redirect('/')
 
-    cursor = g.conn.execute(
-        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",
-        session["id"])
+        cursor = g.conn.execute(
+            "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",
+            session["id"])
 
-    requests = []
-    for result in cursor:
-        print(result)
-        requests.append(result)
-    context = dict(requests=requests)
-    return render_template("getTasksRequests.html", **context)
+        requests = []
+        for result in cursor:
+            print(result)
+            requests.append(result)
+        context = dict(requests=requests)
+        return render_template("getTasksRequests.html", **context)
+    except:
+        return redirect('/errorHandler')
+
+
 
 
 @app.route('/getFinanceRequest')
 @nocache
 def getFinanceRequest():
-    if (session["id"] is None):
-        return redirect('/')
+    try:
+        if (session["id"] is None):
+            return redirect('/')
 
-    cursor = g.conn.execute(
-        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",
-        session["id"])
+        cursor = g.conn.execute(
+            "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",
+            session["id"])
 
-    requests = []
-    for result in cursor:
-        print(result)
-        requests.append(result)
-    context = dict(requests=requests)
-    return render_template("getFinanceRequests.html", **context)
+        requests = []
+        for result in cursor:
+            print(result)
+            requests.append(result)
+        context = dict(requests=requests)
+        return render_template("getFinanceRequests.html", **context)
+    except:
+        return redirect('/errorHandler')
+
+
+
 
 
 @app.route('/applicants')
 def applicants():
-    today = str(date.today())
-    context = dict(todays_date=today)
-    return render_template("applicants.html", **context)
+    try:
+        today = str(date.today())
+        context = dict(todays_date=today)
+        return render_template("applicants.html", **context)
+    except:
+        return redirect('/errorHandler')
+
 
 
 # Example of adding new data to the database
 @app.route('/add_new_applicants', methods=['POST'])
 def add():
-    name = request.form['name']
-    citizenship = request.form['citizenship']
-    passport_number = request.form['passport_number']
-    date_of_birth = request.form['date_of_birth']
-    gender = request.form['gender']
-    room_preference = request.form['room_preference']
-    start_date = request.form['start_date']
-    end_date = request.form['end_date']
-    deptid = 4000
-    print(start_date)
-    print(end_date)
-    print(start_date > end_date)
-    requested_on = str(date.today())
-    processed_on = None
-    args = (
-        name, citizenship, passport_number, date_of_birth, gender, room_preference, start_date, end_date, processed_on,
-        requested_on, deptid
-    )
     try:
-        g.conn.execute('INSERT INTO Applicants_ApprovedBy(name, citizenship, passport_number, date_of_birth, gender, '
-                       'room_preference, start_date, end_date, processed_on, requested_on, '
-                       'deptid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
-                       , args)
+        name = request.form['name']
+        citizenship = request.form['citizenship']
+        passport_number = request.form['passport_number']
+        date_of_birth = request.form['date_of_birth']
+        gender = request.form['gender']
+        room_preference = request.form['room_preference']
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+        deptid = 4000
+        print(start_date)
+        print(end_date)
+        print(start_date > end_date)
+        requested_on = str(date.today())
+        processed_on = None
+        args = (
+            name, citizenship, passport_number, date_of_birth, gender, room_preference, start_date, end_date,
+            processed_on,
+            requested_on, deptid
+        )
+        try:
+            g.conn.execute(
+                'INSERT INTO Applicants_ApprovedBy(name, citizenship, passport_number, date_of_birth, gender, '
+                'room_preference, start_date, end_date, processed_on, requested_on, '
+                'deptid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) '
+                , args)
+        except:
+            today = str(date.today())
+            context = dict(todays_date=today)
+            error = "Please check your input and remember that end date should be greater than start date."
+            return render_template("applicants.html", **context, error=error)
+        args1 = (citizenship, passport_number)
+        cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE citizenship=%s AND "
+                                "passport_number=%s", args1)
+        application_id = []
+        for result in cursor:
+            application_id.append(result['applicationid'])
+        context = dict(application_id=application_id)
+        return render_template("application_successful.html", **context)
     except:
-        today = str(date.today())
-        context = dict(todays_date=today)
-        error = "Please check your input and remember that end date should be greater than start date."
-        return render_template("applicants.html", **context, error=error)
-    args1 = (citizenship, passport_number)
-    cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE citizenship=%s AND "
-                            "passport_number=%s", args1)
-    application_id = []
-    for result in cursor:
-        application_id.append(result['applicationid'])
-    context = dict(application_id=application_id)
-    return render_template("application_successful.html", **context)
+        return redirect('/errorHandler')
+
 
 
 @app.route('/resident_login_page')
@@ -549,31 +616,35 @@ def render_resident_login_page():
 @app.route('/residentHome', methods=["POST", "GET"])
 @nocache
 def resident_login():
-    session["type"] = "resident"
-    if request.method == "POST":
-        resident_id = request.form.get("resident_id")
-        password = request.form.get("password")
-        all_resident_id = g.conn.execute("SELECT residentid FROM Residents")
-        resident_id_list = []
-        for result in all_resident_id:
-            resident_id_list.append(int(result[0]))
-        # record the user name
-        cursor = g.conn.execute("SELECT passport_number FROM Residents WHERE residentid=%s", resident_id)
-        if cursor.rowcount == 0:
-            error = 'Invalid username or password. Please try again!'
-            return render_template('resident_login.html', error=error)
-        passport_number = []
-        for result in cursor:
-            passport_number.append(result)
-        if passport_number[0][0] == password:
-            session["id"] = resident_id
-        else:
-            error = 'Invalid username or password. Please try again!'
-            return render_template('resident_login.html', error=error)
-        return redirect("/")
-        # redirect to the main page
-    elif request.method == "GET":
-        return redirect("/")
+    try:
+        session["type"] = "resident"
+        if request.method == "POST":
+            resident_id = request.form.get("resident_id")
+            password = request.form.get("password")
+            all_resident_id = g.conn.execute("SELECT residentid FROM Residents")
+            resident_id_list = []
+            for result in all_resident_id:
+                resident_id_list.append(int(result[0]))
+            # record the user name
+            cursor = g.conn.execute("SELECT passport_number FROM Residents WHERE residentid=%s", resident_id)
+            if cursor.rowcount == 0:
+                error = 'Invalid username or password. Please try again!'
+                return render_template('resident_login.html', error=error)
+            passport_number = []
+            for result in cursor:
+                passport_number.append(result)
+            if passport_number[0][0] == password:
+                session["id"] = resident_id
+            else:
+                error = 'Invalid username or password. Please try again!'
+                return render_template('resident_login.html', error=error)
+            return redirect("/")
+            # redirect to the main page
+        elif request.method == "GET":
+            return redirect("/")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/employee_login_page')
@@ -584,368 +655,424 @@ def render_employee_login_page():
 
 @app.route('/employeeHome', methods=["POST", "GET"])
 def employee_login():
-    session["type"] = "employee"
-    if request.method == "POST":
-        employee_id = request.form.get("employee_id")
-        password = request.form.get("password")
-        all_employee_id = g.conn.execute("SELECT empid FROM Employees")
-        employee_id_list = []
-        for result in all_employee_id:
-            employee_id_list.append(int(result[0]))
-        # record the user name
-        cursor = g.conn.execute("SELECT ssn FROM Employees WHERE empid=%s", employee_id)
-        if cursor.rowcount == 0:
-            error = 'Invalid username or password. Please try again!'
-            return render_template('employee_login.html', error=error)
-        ssn = []
-        for result in cursor:
-            ssn.append(result)
-        print(ssn)
-        cursor1 = g.conn.execute("SELECT deptid FROM Employees WHERE empid=%s", employee_id)
-        deptid = []
-        for result in cursor1:
-            deptid.append(result)
-        session["deptid"] = deptid[0][0]
-        if (ssn[0][0] == password) and (deptid[0][0] in [4000, 4001, 4002]):
-            session["id"] = employee_id
-        else:
-            error = 'Invalid username or password. Please try again!'
-            return render_template('employee_login.html', error=error)
-        cursor1 = g.conn.execute("SELECT deptid FROM Employees WHERE empid=%s", employee_id)
-        deptid = []
-        for result in cursor1:
-            deptid.append(result)
-        session["deptid"] = deptid[0][0]
-        return redirect("/")
-        # redirect to the main page
-    elif request.method == "GET":
-        return redirect("/")
+    try:
+        session["type"] = "employee"
+        if request.method == "POST":
+            employee_id = request.form.get("employee_id")
+            password = request.form.get("password")
+            all_employee_id = g.conn.execute("SELECT empid FROM Employees")
+            employee_id_list = []
+            for result in all_employee_id:
+                employee_id_list.append(int(result[0]))
+            # record the user name
+            cursor = g.conn.execute("SELECT ssn FROM Employees WHERE empid=%s", employee_id)
+            if cursor.rowcount == 0:
+                error = 'Invalid username or password. Please try again!'
+                return render_template('employee_login.html', error=error)
+            ssn = []
+            for result in cursor:
+                ssn.append(result)
+            print(ssn)
+            cursor1 = g.conn.execute("SELECT deptid FROM Employees WHERE empid=%s", employee_id)
+            deptid = []
+            for result in cursor1:
+                deptid.append(result)
+            session["deptid"] = deptid[0][0]
+            if (ssn[0][0] == password) and (deptid[0][0] in [4000, 4001, 4002]):
+                session["id"] = employee_id
+            else:
+                error = 'Invalid username or password. Please try again!'
+                return render_template('employee_login.html', error=error)
+            cursor1 = g.conn.execute("SELECT deptid FROM Employees WHERE empid=%s", employee_id)
+            deptid = []
+            for result in cursor1:
+                deptid.append(result)
+            session["deptid"] = deptid[0][0]
+            return redirect("/")
+            # redirect to the main page
+        elif request.method == "GET":
+            return redirect("/")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/logout', methods=["GET"])
 def logout():
-    session["id"] = None
-    return redirect("/")
+    try:
+        session["id"] = None
+        return redirect("/")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/admissions')
 @nocache
 def admissions_employee():
-    if (session["id"] is None):
-        return redirect('/')
-    status_needed = "Pending"
-    cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", status_needed)
-    pending_applications = []
-    for result in cursor:
-        pending_applications.append(result)
-    cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
-                                         "FROM Rooms r LEFT JOIN Residents r1 ON "
-                                         "r.room_number=r1.room_number")
-    rooms = []
-    for result in cursor_vacant_rooms:
-        rooms.append(result)
-    context = dict(pending_applications=pending_applications, rooms=rooms)
-    return render_template("employeeHome_admissions.html", **context)
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        status_needed = "Pending"
+        cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", status_needed)
+        pending_applications = []
+        for result in cursor:
+            pending_applications.append(result)
+        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE), r.room_type "
+                                             "FROM Rooms r LEFT JOIN Residents r1 ON "
+                                             "r.room_number=r1.room_number")
+        rooms = []
+        for result in cursor_vacant_rooms:
+            rooms.append(result)
+        context = dict(pending_applications=pending_applications, rooms=rooms)
+        return render_template("employeeHome_admissions.html", **context)
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/finance')
 @nocache
 def finance_employee():
-    if (session["id"] is None):
-        return redirect('/')
-    status_needed = "Pending"
-    args = (status_needed, session["id"])
-    cursor = g.conn.execute(
-        "SELECT r.requestid, r1.residentid, r.request_description, r1.raisedon "
-        "FROM requests r "
-        "JOIN raises r1 "
-        "ON r.requestid=r1.requestid "
-        "JOIN finance_requests fr "
-        "ON r.requestid=fr.requestid "
-        "JOIN managed_by m "
-        "ON m.requestid=r.requestid "
-        "WHERE r.request_status=%s AND m.empid=%s", args)
-    pending_finance_requests = []
-    for result in cursor:
-        pending_finance_requests.append(result)
-    context = dict(pending_finance_requests=pending_finance_requests)
-    return render_template("employeeHome_finance.html", **context)
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        status_needed = "Pending"
+        args = (status_needed, session["id"])
+        cursor = g.conn.execute(
+            "SELECT r.requestid, r1.residentid, r.request_description, r1.raisedon "
+            "FROM requests r "
+            "JOIN raises r1 "
+            "ON r.requestid=r1.requestid "
+            "JOIN finance_requests fr "
+            "ON r.requestid=fr.requestid "
+            "JOIN managed_by m "
+            "ON m.requestid=r.requestid "
+            "WHERE r.request_status=%s AND m.empid=%s", args)
+        pending_finance_requests = []
+        for result in cursor:
+            pending_finance_requests.append(result)
+        context = dict(pending_finance_requests=pending_finance_requests)
+        return render_template("employeeHome_finance.html", **context)
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/facilities')
 @nocache
 def facilities_employee():
+    try:
+        if (session["id"] is None):
+            return redirect('/')
 
-    if (session["id"] is None):
-        return redirect('/')
+        status_not_wanted = "Complete"
+        args = (status_not_wanted, session["id"])
 
-    status_not_wanted = "Complete"
-    args = (status_not_wanted, session["id"])
+        cursor = g.conn.execute(
+            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category, "
+            "r1.raisedon FROM requests r "
+            "JOIN raises r1 "
+            "ON r.requestid=r1.requestid "
+            "JOIN task_requests tr "
+            "ON r.requestid=tr.requestid "
+            "JOIN managed_by m "
+            "ON m.requestid=r.requestid "
+            "WHERE r.request_status <> %s AND m.empid=%s", args)
+        task_requests = []
+        for result in cursor:
+            task_requests.append(result)
+        context = dict(task_requests=task_requests)
+        return render_template("employeeHome_facilities.html", **context)
+    except:
+        return redirect('/errorHandler')
 
-    cursor = g.conn.execute(
-        "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category, "
-        "r1.raisedon FROM requests r "
-        "JOIN raises r1 "
-        "ON r.requestid=r1.requestid "
-        "JOIN task_requests tr "
-        "ON r.requestid=tr.requestid "
-        "JOIN managed_by m "
-        "ON m.requestid=r.requestid "
-        "WHERE r.request_status <> %s AND m.empid=%s", args)
-    task_requests = []
-    for result in cursor:
-        task_requests.append(result)
-    context = dict(task_requests=task_requests)
-    return render_template("employeeHome_facilities.html", **context)
 
 
 @app.route('/admissions/approved', methods=["POST"])
 @nocache
 def admission_approved():
-    if (session["id"] is None):
-        return redirect('/')
-    application_id = request.form.get("application_id")
-    room_number = request.form.get("room_number")
-    new_status = 'Approved'
-    old_status = 'Pending'
-    all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
-                                        old_status)
-    all_room_number = g.conn.execute("SELECT room_number FROM Rooms")
-    application_id_list = []
-    room_number_list = []
-    for result in all_application_id:
-        application_id_list.append(int(result[0]))
-    for result in all_room_number:
-        room_number_list.append(int(result[0]))
-    cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
-    pending_applications = []
-    for result in cursor:
-        pending_applications.append(result)
-    cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE) "
-                                         "FROM Rooms r LEFT JOIN Residents r1 ON "
-                                         "r.room_number=r1.room_number")
-    rooms = []
-    for result in cursor_vacant_rooms:
-        rooms.append(result)
-    context = dict(pending_applications=pending_applications, rooms=rooms)
-    print(application_id)
-    print(application_id_list)
-    if (int(application_id) not in application_id_list) or (int(room_number) not in room_number_list):
-        error = "Please verify the details you have entered and check that the room will be vacant when the applicant " \
-                "moves in"
-        return render_template("employeeHome_admissions.html", **context, error=error)
-    date_vacant_of_entered_room = g.conn.execute("SELECT COALESCE(r1.to_date, CURRENT_DATE) "
-                                                 "FROM Rooms r LEFT JOIN Residents r1 ON "
-                                                 "r.room_number=r1.room_number WHERE r.room_number=%s", room_number)
-    from_date_of_application_id = g.conn.execute("SELECT start_date FROM Applicants_ApprovedBy "
-                                                 "WHERE applicationid=%s", application_id)
-    date_room_vacant = ''
-    from_date_applicant = ''
-    for result in date_vacant_of_entered_room:
-        print(result)
-        date_room_vacant = result[0].strftime("%Y-%m-%d")
-    for result in from_date_of_application_id:
-        print(result)
-        from_date_applicant = result[0].strftime("%Y-%m-%d")
-    print(date_room_vacant)
-    print(from_date_applicant)
-    print(date_room_vacant > from_date_applicant)
-    if date_room_vacant > from_date_applicant:
-        error = "Please verify the details you have entered and check that the room will be vacant when the applicant " \
-                "moves in"
-        return render_template("employeeHome_admissions.html", **context, error=error)
-    g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
-                   "WHERE applicationid=%s", (new_status, application_id))
-    cursor = g.conn.execute("SELECT applicationid, name, citizenship, passport_number, date_of_birth, gender, "
-                            "start_date, end_date FROM Applicants_ApprovedBy WHERE applicationid=%s", application_id)
-    fields = []
-    for result in cursor:
-        fields.append(result)
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        application_id = request.form.get("application_id")
+        room_number = request.form.get("room_number")
+        new_status = 'Approved'
+        old_status = 'Pending'
+        all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
+                                            old_status)
+        all_room_number = g.conn.execute("SELECT room_number FROM Rooms")
+        application_id_list = []
+        room_number_list = []
+        for result in all_application_id:
+            application_id_list.append(int(result[0]))
+        for result in all_room_number:
+            room_number_list.append(int(result[0]))
+        cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
+        pending_applications = []
+        for result in cursor:
+            pending_applications.append(result)
+        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE) "
+                                             "FROM Rooms r LEFT JOIN Residents r1 ON "
+                                             "r.room_number=r1.room_number")
+        rooms = []
+        for result in cursor_vacant_rooms:
+            rooms.append(result)
+        context = dict(pending_applications=pending_applications, rooms=rooms)
+        print(application_id)
+        print(application_id_list)
+        if (int(application_id) not in application_id_list) or (int(room_number) not in room_number_list):
+            error = "Please verify the details you have entered and check that the room will be vacant when the applicant " \
+                    "moves in"
+            return render_template("employeeHome_admissions.html", **context, error=error)
+        date_vacant_of_entered_room = g.conn.execute("SELECT COALESCE(r1.to_date, CURRENT_DATE) "
+                                                     "FROM Rooms r LEFT JOIN Residents r1 ON "
+                                                     "r.room_number=r1.room_number WHERE r.room_number=%s", room_number)
+        from_date_of_application_id = g.conn.execute("SELECT start_date FROM Applicants_ApprovedBy "
+                                                     "WHERE applicationid=%s", application_id)
+        date_room_vacant = ''
+        from_date_applicant = ''
+        for result in date_vacant_of_entered_room:
+            print(result)
+            date_room_vacant = result[0].strftime("%Y-%m-%d")
+        for result in from_date_of_application_id:
+            print(result)
+            from_date_applicant = result[0].strftime("%Y-%m-%d")
+        print(date_room_vacant)
+        print(from_date_applicant)
+        print(date_room_vacant > from_date_applicant)
+        if date_room_vacant > from_date_applicant:
+            error = "Please verify the details you have entered and check that the room will be vacant when the applicant " \
+                    "moves in"
+            return render_template("employeeHome_admissions.html", **context, error=error)
+        g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
+                       "WHERE applicationid=%s", (new_status, application_id))
+        cursor = g.conn.execute("SELECT applicationid, name, citizenship, passport_number, date_of_birth, gender, "
+                                "start_date, end_date FROM Applicants_ApprovedBy WHERE applicationid=%s",
+                                application_id)
+        fields = []
+        for result in cursor:
+            fields.append(result)
 
-    room_rent_cursor = g.conn.execute("SELECT room_cost FROM rooms WHERE room_number=%s", room_number)
-    room_rent = []
-    for result in room_rent_cursor:
-        room_rent.append(result)
+        room_rent_cursor = g.conn.execute("SELECT room_cost FROM rooms WHERE room_number=%s", room_number)
+        room_rent = []
+        for result in room_rent_cursor:
+            room_rent.append(result)
 
-    outstanding_rent = int(room_rent[0][0])
+        outstanding_rent = int(room_rent[0][0])
 
-    args = (
-        fields[0][0], fields[0][1], fields[0][2], fields[0][3], fields[0][4], fields[0][5], 500, fields[0][6],
-        fields[0][7], room_number, outstanding_rent)
-    g.conn.execute("INSERT INTO Residents (residentid, name, citizenship, passport_number, date_of_birth, gender, "
-                   "dining_hall_credit, from_date, to_date, room_number, outstanding_rent) VALUES (%s, %s, %s, %s, "
-                   "%s, %s, %s, %s, %s, %s, %s)", args)
-    return redirect("/admissions")
+        args = (
+            fields[0][0], fields[0][1], fields[0][2], fields[0][3], fields[0][4], fields[0][5], 500, fields[0][6],
+            fields[0][7], room_number, outstanding_rent)
+        g.conn.execute("INSERT INTO Residents (residentid, name, citizenship, passport_number, date_of_birth, gender, "
+                       "dining_hall_credit, from_date, to_date, room_number, outstanding_rent) VALUES (%s, %s, %s, %s, "
+                       "%s, %s, %s, %s, %s, %s, %s)", args)
+        return redirect("/admissions")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/admissions/rejected', methods=['POST'])
 @nocache
 def admission_rejected():
-    if (session["id"] is None):
-        return redirect('/')
-    application_id = request.form.get("application_id")
-    old_status = "Pending"
-    all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
-                                        old_status)
-    new_status = "Rejected"
-    application_id_list = []
-    cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
-    pending_applications = []
-    for result in cursor:
-        pending_applications.append(result)
-    cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE) "
-                                         "FROM Rooms r LEFT JOIN Residents r1 ON "
-                                         "r.room_number=r1.room_number")
-    rooms = []
-    for result in cursor_vacant_rooms:
-        rooms.append(result)
-    context = dict(pending_applications=pending_applications, rooms=rooms)
-    for result in all_application_id:
-        application_id_list.append(int(result[0]))
-    print(application_id)
-    print(application_id_list)
-    if int(application_id) not in application_id_list:
-        error1 = "Please verify the details you have entered"
-        return render_template("employeeHome_admissions.html", **context, error1=error1)
-    g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
-                   "WHERE applicationid=%s", (new_status, application_id))
-    return redirect("/admissions")
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        application_id = request.form.get("application_id")
+        old_status = "Pending"
+        all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
+                                            old_status)
+        new_status = "Rejected"
+        application_id_list = []
+        cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
+        pending_applications = []
+        for result in cursor:
+            pending_applications.append(result)
+        cursor_vacant_rooms = g.conn.execute("SELECT r.room_number, COALESCE(r1.to_date, CURRENT_DATE) "
+                                             "FROM Rooms r LEFT JOIN Residents r1 ON "
+                                             "r.room_number=r1.room_number")
+        rooms = []
+        for result in cursor_vacant_rooms:
+            rooms.append(result)
+        context = dict(pending_applications=pending_applications, rooms=rooms)
+        for result in all_application_id:
+            application_id_list.append(int(result[0]))
+        print(application_id)
+        print(application_id_list)
+        if int(application_id) not in application_id_list:
+            error1 = "Please verify the details you have entered"
+            return render_template("employeeHome_admissions.html", **context, error1=error1)
+        g.conn.execute("UPDATE Applicants_ApprovedBy SET approval_status=%s, processed_on=CURRENT_DATE "
+                       "WHERE applicationid=%s", (new_status, application_id))
+        return redirect("/admissions")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route("/finance/approved", methods=["POST"])
 @nocache
 def finance_approved():
-    if (session["id"] is None):
-        return redirect('/')
-    request_id = request.form.get("request_id")
-    amount = request.form.get("amount")
-    new_status = "Approved"
-    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
-    result = g.conn.execute("UPDATE Finance_Requests SET amount=%s WHERE requestid=%s", (amount, request_id))
-    if result.rowcount == 0:
-        status_needed = "Pending"
-        cursor = g.conn.execute(
-            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
-            "FROM requests r "
-            "JOIN raises r1 "
-            "ON r.requestid=r1.requestid "
-            "JOIN finance_requests fr "
-            "ON r.requestid=fr.requestid "
-            "WHERE r.request_status=%s", status_needed)
-        pending_finance_requests = []
-        for result in cursor:
-            pending_finance_requests.append(result)
-        context = dict(pending_finance_requests=pending_finance_requests)
-        error = "Please check the Request ID"
-        return render_template("employeeHome_finance.html", **context, error=error)
-    else:
-        return redirect("/finance")
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        request_id = request.form.get("request_id")
+        amount = request.form.get("amount")
+        new_status = "Approved"
+        result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+        result = g.conn.execute("UPDATE Finance_Requests SET amount=%s WHERE requestid=%s", (amount, request_id))
+        if result.rowcount == 0:
+            status_needed = "Pending"
+            args = (status_needed, session["id"])
+            cursor = g.conn.execute(
+                "SELECT r.requestid, r1.residentid, r.request_description, r1.raisedon "
+                "FROM requests r "
+                "JOIN raises r1 "
+                "ON r.requestid=r1.requestid "
+                "JOIN finance_requests fr "
+                "ON r.requestid=fr.requestid "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status=%s AND m.empid=%s", args)
+            pending_finance_requests = []
+            for result in cursor:
+                pending_finance_requests.append(result)
+            context = dict(pending_finance_requests=pending_finance_requests)
+            error = "Please check the Request ID"
+            return render_template("employeeHome_finance.html", **context, error=error)
+        else:
+            return redirect("/finance")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/finance/rejected', methods=["POST"])
 @nocache
 def finance_rejected():
-    if (session["id"] is None):
-        return redirect('/')
-    request_id = request.form.get("request_id")
-    new_status = "Rejected"
-    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
-    if result.rowcount != 0:
-        return redirect("/finance")
-    else:
-        status_needed = "Pending"
-        cursor = g.conn.execute(
-            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status "
-            "FROM requests r "
-            "JOIN raises r1 "
-            "ON r.requestid=r1.requestid "
-            "JOIN finance_requests fr "
-            "ON r.requestid=fr.requestid "
-            "WHERE r.request_status=%s", status_needed)
-        pending_finance_requests = []
-        for result in cursor:
-            pending_finance_requests.append(result)
-        context = dict(pending_finance_requests=pending_finance_requests)
-        error = "Please check the Request ID"
-        return render_template("employeeHome_finance.html", **context, error=error)
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        request_id = request.form.get("request_id")
+        new_status = "Rejected"
+        result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+        if result.rowcount != 0:
+            return redirect("/finance")
+        else:
+            status_needed = "Pending"
+            args = (status_needed, session["id"])
+            cursor = g.conn.execute(
+                "SELECT r.requestid, r1.residentid, r.request_description, r1.raisedon "
+                "FROM requests r "
+                "JOIN raises r1 "
+                "ON r.requestid=r1.requestid "
+                "JOIN finance_requests fr "
+                "ON r.requestid=fr.requestid "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status=%s AND m.empid=%s", args)
+            pending_finance_requests = []
+            for result in cursor:
+                pending_finance_requests.append(result)
+            context = dict(pending_finance_requests=pending_finance_requests)
+            error1 = "Please check the Request ID"
+            return render_template("employeeHome_finance.html", **context, error1=error1)
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/facilities/status_update', methods=["POST"])
 @nocache
 def facilities_status_update():
-    if (session["id"] is None):
-        return redirect('/')
-    request_id = request.form.get("request_id")
-    new_status = request.form.get("current_status")
-    result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
-    if result.rowcount == 0:
-        status_not_wanted = "Complete"
-        args = (status_not_wanted, session["id"])
-        cursor = g.conn.execute(
-            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
-            "tr.category, r1.raisedon FROM requests r "
-            "JOIN raises r1 "
-            "ON r.requestid=r1.requestid "
-            "JOIN task_requests tr "
-            "ON r.requestid=tr.requestid "
-            "JOIN managed_by m "
-            "ON m.requestid=r.requestid "
-            "WHERE r.request_status <> %s AND m.empid=%s", args)
-        task_requests = []
-        for result in cursor:
-            task_requests.append(result)
-        context = dict(task_requests=task_requests)
-        error = "Please check the Request ID"
-        return render_template("employeeHome_facilities.html", **context, error=error)
-    else:
-        return redirect("/facilities")
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        request_id = request.form.get("request_id")
+        new_status = request.form.get("current_status")
+        result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+        if result.rowcount == 0:
+            status_not_wanted = "Complete"
+            args = (status_not_wanted, session["id"])
+            cursor = g.conn.execute(
+                "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
+                "tr.category, r1.raisedon FROM requests r "
+                "JOIN raises r1 "
+                "ON r.requestid=r1.requestid "
+                "JOIN task_requests tr "
+                "ON r.requestid=tr.requestid "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status <> %s AND m.empid=%s", args)
+            task_requests = []
+            for result in cursor:
+                task_requests.append(result)
+            context = dict(task_requests=task_requests)
+            error = "Please check the Request ID"
+            return render_template("employeeHome_facilities.html", **context, error=error)
+        else:
+            return redirect("/facilities")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/facilities/priority_update', methods=["POST"])
 @nocache
 def facilities_priority_update():
-    if (session["id"] is None):
-        return redirect('/')
-    request_id = request.form.get("request_id")
-    new_priority = request.form.get("current_priority")
-    result = g.conn.execute("UPDATE Requests SET request_priority=%s WHERE requestid=%s", (new_priority, request_id))
-    if result.rowcount == 0:
-        status_not_wanted = "Complete"
-        args = (status_not_wanted, session["id"])
-        cursor = g.conn.execute(
-            "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
-            "tr.category, r1.raisedon FROM requests r "
-            "JOIN raises r1 "
-            "ON r.requestid=r1.requestid "
-            "JOIN task_requests tr "
-            "ON r.requestid=tr.requestid "
-            "JOIN managed_by m "
-            "ON m.requestid=r.requestid "
-            "WHERE r.request_status <> %s AND m.empid=%s", args)
-        task_requests = []
-        for result in cursor:
-            task_requests.append(result)
-        context = dict(task_requests=task_requests)
-        error = "Please check the Request ID"
-        return render_template("employeeHome_facilities.html", **context, error=error)
-    else:
-        return redirect("/facilities")
+    try:
+        if (session["id"] is None):
+            return redirect('/')
+        request_id = request.form.get("request_id")
+        new_priority = request.form.get("current_priority")
+        result = g.conn.execute("UPDATE Requests SET request_priority=%s WHERE requestid=%s",
+                                (new_priority, request_id))
+        if result.rowcount == 0:
+            status_not_wanted = "Complete"
+            args = (status_not_wanted, session["id"])
+            cursor = g.conn.execute(
+                "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
+                "tr.category, r1.raisedon FROM requests r "
+                "JOIN raises r1 "
+                "ON r.requestid=r1.requestid "
+                "JOIN task_requests tr "
+                "ON r.requestid=tr.requestid "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status <> %s AND m.empid=%s", args)
+            task_requests = []
+            for result in cursor:
+                task_requests.append(result)
+            context = dict(task_requests=task_requests)
+            error1 = "Please check the Request ID"
+            return render_template("employeeHome_facilities.html", **context, error1=error1)
+        else:
+            return redirect("/facilities")
+    except:
+        return redirect('/errorHandler')
+
 
 
 @app.route('/employeeDetails')
 def employeeDetails():
-    cursor = g.conn.execute("SELECT * FROM Employees E JOIN Departments D ON E.deptid=D.deptid WHERE E.empid=%s",
-                            session["id"])
-    data = []
-    for result in cursor:
-        data.append(result)
-    context = dict(data=data)
-    if session["deptid"] == 4000:
-        return render_template('employeeDetails_admission.html', **context)
-    elif session["deptid"] == 4001:
-        return render_template('employeeDetails_finance.html', **context)
-    else:
-        return render_template('employeeDetails_facilities.html', **context)
+    try:
+        cursor = g.conn.execute("SELECT * FROM Employees E JOIN Departments D ON E.deptid=D.deptid WHERE E.empid=%s",
+                                session["id"])
+        data = []
+        for result in cursor:
+            data.append(result)
+        context = dict(data=data)
+        if session["deptid"] == 4000:
+            return render_template('employeeDetails_admission.html', **context)
+        elif session["deptid"] == 4001:
+            return render_template('employeeDetails_finance.html', **context)
+        else:
+            return render_template('employeeDetails_facilities.html', **context)
+    except:
+        return redirect('/errorHandler')
+
+
 
 
 if __name__ == "__main__":
