@@ -251,7 +251,7 @@ def getItalian():
         if dining_credit < 15:
             return render_template("noDiningFunds.html")
         item_name = 'Italian Meal'
-        bill_amount = 15
+        bill_amount = 20
         category = 'Vegetarian'
         order_on = str(date.today())
         residentid = session['id']
