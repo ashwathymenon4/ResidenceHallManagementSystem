@@ -593,7 +593,7 @@ def finance_employee():
     status_needed = "Pending"
     args = (status_needed, session["id"])
     cursor = g.conn.execute(
-        "SELECT r.requestid, r1.residentid, r.request_description, r1.raised_on "
+        "SELECT r.requestid, r1.residentid, r.request_description, r1.raisedon "
         "FROM requests r "
         "JOIN raises r1 "
         "ON r.requestid=r1.requestid "

@@ -27,7 +27,6 @@
             <div class="navbar-nav">
                 <a class="nav-link" href="/facilities">Home</a>
                 <a class="nav-link" href="/employeeDetails">Employee Details</a>
-                <a class="nav-link" href="/departmentDetails">Department Details</a>
                 </div>
 
             <div class="navbar-nav ms-auto">
@@ -40,16 +39,16 @@
     </div>
 </nav>
 
-<p> ID : {{ data[0] }} </p>
-<p> SSN : {{ data[1] }} </p>
-<p> Name : {{ data[2] }} </p>
-<p> Address : {{ data[3] }} </p>
-<p> Date of Birth : {{ data[4] }} </p>
-<p> Gender : {{ data[5] }} </p>
-<p> Salary : {{ data[6] }} </p>
-<p> From Date : {{ data[8] }} </p>
-<p> Designation : {{ data[10] }} </p>
-<p> Department Name : {{ data[12] }} </p>
+<p> ID : {{ data[0][0] }} </p>
+<p> SSN : {{ data[0][1] }} </p>
+<p> Name : {{ data[0][2] }} </p>
+<p> Address : {{ data[0][3] }} </p>
+<p> Date of Birth : {{ data[0][4] }} </p>
+<p> Gender : {{ data[0][5] }} </p>
+<p> Salary : {{ data[0][6] }} </p>
+<p> From Date : {{ data[0][8] }} </p>
+<p> Designation : {{ data[0][10] }} </p>
+<p> Department Name : {{ data[0][12] }} </p>
 
 
 </body>
