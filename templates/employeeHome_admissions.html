@@ -24,6 +24,12 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/admissions">Home</a>
+                <a class="nav-link" href="/employeeDetails">Employee Details</a>
+                <a class="nav-link" href="/departmentDetails">Department Details</a>
+                </div>
+
             <div class="navbar-nav ms-auto">
 
                     <a class="nav-link" href="/logout">Logout</a>
@@ -74,6 +80,7 @@
         <tr style="text-align: left;">
             <th>Room Number</th>
             <th>Vacant From</th>
+            <th>Room Type</th>
         </tr>
     </thead>
     <tbody>
@@ -81,6 +88,7 @@
         <tr>
             <td>{{ n[0] }}</td>
             <td>{{ n[1] }}</td>
+            <td>{{ n[2] }}</td>
         </tr>
         {% endfor %}
     </tbody>
