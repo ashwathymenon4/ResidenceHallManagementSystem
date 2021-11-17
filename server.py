@@ -710,7 +710,7 @@ def logout():
 @app.route('/admissions')
 @nocache
 def admissions_employee():
-    try:
+
         if (session["id"] is None):
             return redirect('/')
         status_needed = "Pending"
@@ -726,8 +726,7 @@ def admissions_employee():
             rooms.append(result)
         context = dict(pending_applications=pending_applications, rooms=rooms)
         return render_template("employeeHome_admissions.html", **context)
-    except:
-        return redirect('/errorHandler')
+
 
 
 
@@ -792,7 +791,7 @@ def facilities_employee():
 @app.route('/admissions/approved', methods=["POST"])
 @nocache
 def admission_approved():
-    try:
+
         if (session["id"] is None):
             return redirect('/')
         application_id = request.form.get("application_id")
@@ -868,8 +867,7 @@ def admission_approved():
                        "dining_hall_credit, from_date, to_date, room_number, outstanding_rent) VALUES (%s, %s, %s, %s, "
                        "%s, %s, %s, %s, %s, %s, %s)", args)
         return redirect("/admissions")
-    except:
-        return redirect('/errorHandler')
+
 
 
 
