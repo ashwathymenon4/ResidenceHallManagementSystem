@@ -609,14 +609,7 @@ def add():
 
 @app.route('/resident_login_page')
 def render_resident_login_page():
-    try:
-        if session["id"] is not None:
-            return redirect("/")
-        else:
-            return render_template("resident_login.html")
-    except:
-        return redirect('/errorHandler')
-
+    return render_template("resident_login.html")
 
 
 
@@ -656,12 +649,7 @@ def resident_login():
 
 @app.route('/employee_login_page')
 def render_employee_login_page():
-    try:
-        if (session["id"] is not None):
-            return redirect('/')
-        return render_template("employee_login.html")
-    except:
-        return redirect('/errorHandler')
+    return render_template("employee_login.html")
 
 
 
