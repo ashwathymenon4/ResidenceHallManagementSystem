@@ -67,8 +67,8 @@
     <p><strong>Error:</strong> {{ error }}</p>
   {% endif %}
   <form method="POST" action="/finance/approved">
-      <p>Request ID: <input type="text" name="request_id" required></p>
-      <p>Approved Amount: <input type="text" name="amount" required></p>
+      <p>Request ID: <input type="number" min=0 name="request_id" required ></p>
+      <p>Approved Amount: <input type="number" min=0 name="amount" required></p>
       <p><input type="submit" value="Approve"></p>
   </form>
 
@@ -77,7 +77,7 @@
     <p><strong>Error:</strong> {{ error1 }}</p>
   {% endif %}
   <form method="POST" action="/finance/rejected">
-      <p>Request ID: <input type="text" name="request_id" required></p>
+      <p>Request ID: <input type="number" min=0 name="request_id" required></p>
       <p><input type="submit" value="Reject"></p>
   </form>
 
