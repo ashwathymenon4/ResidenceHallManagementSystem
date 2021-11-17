@@ -10,6 +10,7 @@ Read about it online.
 import os
 # accessible as a variable in index.html:
 import random
+import datetime
 from typing import Any, Tuple
 from sqlalchemy import exc
 from nocache import nocache
@@ -627,7 +628,7 @@ def admission_approved():
     print(application_id)
     print(application_id_list)
     if (int(application_id) not in application_id_list) or (int(room_number) not in room_number_list):
-        error = "Please verify the details you have entered and check that the room will be vacant when the applicant " \
+        error = "Please verify the details you have entered and check that the room will be vacant when the applicant "\
                 "moves in"
         return render_template("employeeHome_admissions.html", **context, error=error)
     date_vacant_of_entered_room = g.conn.execute("SELECT COALESCE(r1.to_date, CURRENT_DATE) "
@@ -657,13 +658,22 @@ def admission_approved():
     fields = []
     for result in cursor:
         fields.append(result)
+
+    room_rent_cursor = g.conn.execute("SELECT room_cost FROM rooms WHERE room_number=%s", room_number)
+    room_rent = []
+    for result in room_rent_cursor:
+        room_rent.append(result)
+    format_of_date = '%Y-%m-%d'
+    from_date_new = datetime.datetime.strptime(fields[0][6], format_of_date)
+    to_date_new = datetime.datetime.strptime(fields[0][7], format_of_date)
+    num_months = (((to_date_new.year - from_date_new.year) * 12) + (to_date_new.month - from_date_new.month))+1
+    outstanding_rent = num_months * room_rent[0]
     args = (
         fields[0][0], fields[0][1], fields[0][2], fields[0][3], fields[0][4], fields[0][5], 500, fields[0][6],
-        fields[0][7],
-        room_number)
+        fields[0][7], room_number, outstanding_rent)
     g.conn.execute("INSERT INTO Residents (residentid, name, citizenship, passport_number, date_of_birth, gender, "
-                   "dining_hall_credit, from_date, to_date, room_number) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, "
-                   "%s)", args)
+                   "dining_hall_credit, from_date, to_date, room_number, outstanding_rent) VALUES (%s, %s, %s, %s, "
+                   "%s, %s, %s, %s, %s, %s, %s)", args)
     return redirect("/admissions")
 
 
