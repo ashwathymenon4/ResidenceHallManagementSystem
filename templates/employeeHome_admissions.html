@@ -98,8 +98,8 @@
     <p><strong>Error:</strong> {{ error }}</p>
   {% endif %}
   <form method="POST" action="/admissions/approved">
-      <p>Application ID: <input type="text" name="application_id" required></p>
-      <p>Room Number: <input type="text" name="room_number" required></p>
+      <p>Application ID: <input type="number" min=0 name="application_id" required></p>
+      <p>Room Number: <input type="number" min=0 name="room_number" required></p>
       <p><input type="submit" value="Approve"></p>
   </form>
 
@@ -108,7 +108,7 @@
     <p><strong>Error:</strong> {{ error1 }}</p>
   {% endif %}
   <form method="POST" action="/admissions/rejected">
-      <p>Application ID: <input type="text" name="application_id" required></p>
+      <p>Application ID: <input type="number" min=0 name="application_id" required></p>
       <p><input type="submit" value="Reject"></p>
   </form>
 
