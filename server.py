@@ -316,25 +316,51 @@ def raiseFinanceRequest():
 def add_new_FinanceRequest():
     residentID = session["id"]
     requestID = 0
-
-
-
     description = request.form['financeCategory']
-
     request_priority = 1
-    request_status = 'Pending'
-    amount = request.form['amount']
-
+    amount = 0
     today = str(date.today())
-    print(today)
     raisedon = today
-    args = ( description, request_priority, request_status)
+    outstanding=0
+    request_status='Pending'
+    if description == 'Rent Payment':
+        print('Room Rent')
+        cursor = g.conn.execute('select outstanding_rent from residents where residentid=%s',session['id'])
+        for row in cursor:
+            outstanding=int(row[0])
+        print(outstanding)
+        if outstanding ==0:
+            request_status='Rejected'
+        else:
+            args = (0,session['id'])
+            g.conn.execute('update residents set outstanding_rent=%s where residentid=%s',args )
+            request_status = 'Approved'
+
+
+
+    if description == 'Room Rent':
+        amount=outstanding
+
+    if description == 'Dining Fees':
+        amount=100
+        dining_hall=0
+        cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+        for row in cursor:
+            dining_hall = row[0]
+        dining_hall=amount+dining_hall
+        args = (dining_hall, session['id'])
+        g.conn.execute('update residents set dining_hall_credit=%s where residentid=%s', args)
+        request_status = 'Approved'
+
+    args = (description, request_priority, request_status)
     g.conn.execute(
         "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
         args)
     cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
     for row in cursor:
         requestID = int(row[0])
+
+
     args = (requestID, amount)
     g.conn.execute("INSERT INTO Finance_Requests(requestid,amount) VALUES (%s, %s)", args)
     args = (residentID, requestID, raisedon)
@@ -368,7 +394,7 @@ def add_new_TaskRequest():
     residentID = session['id']
 
     description = request.form['description']
-    category = request.form['category']
+    category = request.form['taskCategory']
     request_priority = 1
     request_status = 'Pending'
 
@@ -401,7 +427,7 @@ def add_new_TaskRequest():
 def getTaskRequest():
     if(session["id"] is None):
         return redirect('/')
-    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",session["id"])
+    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",session["id"])
     requests = []
     for result in cursor:
         print(result)
@@ -414,7 +440,7 @@ def getTaskRequest():
 def getFinanceRequest():
     if (session["id"] is None):
         return redirect('/')
-    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",session["id"])
+    cursor = g.conn.execute("SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",session["id"])
     requests = []
     for result in cursor:
         print(result)

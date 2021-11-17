@@ -25,11 +25,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <a class="nav-link" href="/residentHome">Home</a>
+               <a class="nav-link" href="/residentHome">Home</a>
                 <a class="nav-link" href="/getTaskRequest">Task Requests</a>
                 <a class="nav-link" href="/getFinanceRequest">Finance Requests</a>
                 <a class="nav-link" href="/orderFood">Order Food</a>
-                <a class="nav-link" href="/residentDiningHall">Billing Summary</a>
+                <a class="nav-link" href="/getPaymentSummary">Billing Summary</a>
 
             </div>
             <div class="navbar-nav ms-auto">
@@ -41,10 +41,11 @@
         </div>
     </div>
 </nav>
-
-
 <div class="row">
-        <h1 class="text-center">New Finance Requests</h1>
+<div> <h2>Rent payment will only be approved if you have an outstanding balance. To check your outstanding balance please go to the billing summary page.</h2></div>
+</div>
+    <div class="row">
+        <h3 class="text-center">Select the finance request from below dropdown</h3>
         <div class="col-md-6 offset-md-3">
 <form action="/newFinanceRequest" method="POST">
 
@@ -56,8 +57,8 @@
                         <option value="Dodge Foundation Fund">Dodge Foundation Fund</option>
                         <option value="The Haberman Fund">The Haberman Fund</option>
                         <option value="Mitsui USA Foundation Fund">Mitsui USA Foundation Fund</option>
-                        <option value="Rent Payment">Rent Payment</option>
-                        <option value="Dining Fees">Dining Fees</option>
+                        <option value="Rent Payment">Monthly Rent Payment</option>
+                        <option value="Dining Fees">Dining Fees 100$ recharge</option>
                         </datalist>
 
                     </div>
@@ -66,11 +67,7 @@
 
 
 
-                    <div class="mb-3">
-                    <label class="form-label" for="amount">Amount in $:</label>
-                    <input class="form-control" type="number" id="amount" name="amount" required>
 
-                    </div>
 
                     <div class="mb-3">
                         <button class="btn btn-success" type="submit">Raise Request</button>
