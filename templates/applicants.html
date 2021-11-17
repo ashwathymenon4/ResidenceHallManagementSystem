@@ -19,17 +19,16 @@
       <p>Citizenship: <input type="text" name="citizenship" required></p>
       <p>Passport Number: <input type="text" name="passport_number" required></p>
       <p>Date of Birth: <input type="date" id="date_of_birth" name="date_of_birth" value={{todays_date}} min="1900-01-01" max={{todays_date}} required></p>
-      <p>Gender: <input list="gender" name="gender" required>
-          <datalist id="gender">
-          <option value="Male">
-          <option value="Female">
-      </datalist>
+      <p>Gender:
+          <select class="form-control" id="gender" name="gender">
+            <option value="male">Male</option>
+             <option value="female">Female</option>
+           </select>
       </p>
-      <p>Room Preference: <input list="room_preference" name="room_preference" required>
-          <datalist id="room_preference">
-          <option value="with sink">
-          <option value="without sink">
-      </datalist>
+      <p>Room Preference: <select class="form-control" id="room_preference" name="room_preference">
+            <option value="with sink">With Sink</option>
+             <option value="without sink">Without Sink</option>
+           </select>
       </p>
       <p>Start Date: <input type="date" id="start_date" name="start_date" value={{todays_date}} min={{todays_date}} required></p>
       <p>End Date: <input type="date" id="end_date" name="end_date" value={{todays_date}} min={{todays_date}} required></p>

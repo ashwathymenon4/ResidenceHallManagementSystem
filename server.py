@@ -542,10 +542,7 @@ def add():
 
 @app.route('/resident_login_page')
 def render_resident_login_page():
-    if session["id"] is not None:
-        return redirect("/")
-    else:
-        return render_template("resident_login.html")
+    return render_template("resident_login.html")
 
 
 
@@ -581,14 +578,12 @@ def resident_login():
 
 @app.route('/employee_login_page')
 def render_employee_login_page():
-    if (session["id"] is not None):
-        return redirect('/')
     return render_template("employee_login.html")
+
 
 
 @app.route('/employeeHome', methods=["POST", "GET"])
 def employee_login():
-
     session["type"] = "employee"
     if request.method == "POST":
         employee_id = request.form.get("employee_id")

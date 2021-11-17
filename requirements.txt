@@ -2,3 +2,4 @@ flask
 sqlalchemy
 click
 psycopg2
+Flask-Session
