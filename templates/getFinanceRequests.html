@@ -25,7 +25,7 @@
                 <a class="nav-link" href="/getTaskRequest">Task Requests</a>
                 <a class="nav-link" href="/getFinanceRequest">Finance Requests</a>
                 <a class="nav-link" href="/orderFood">Order Food</a>
-                <a class="nav-link" href="/residentDiningHall">Billing Summary</a>
+                <a class="nav-link" href="/getPaymentSummary">Billing Summary</a>
 
             </div>
             <div class="navbar-nav ms-auto">
@@ -42,13 +42,14 @@
 <br>
 <div class="row">
     <div class="col-md-6 offset-md-3">
-        <table style="width:400px" border="1" class="table table-striped table-dark" rules=requests>
+        <table style="width:700px" border="1" class="table table-striped table-dark" rules=requests>
     <thead>
         <tr style="text-align: left;">
             <th>Request ID</th>
             <th>Request Description</th>
             <th>Request Priority</th>
             <th>Request Status</th>
+            <th>Request Date</th>
         </tr>
     </thead>
     <tbody>
@@ -58,6 +59,7 @@
             <td>{{ n[1] }}</td>
             <td>{{ n[2] }}</td>
             <td>{{ n[3] }}</td>
+            <td>{{ n[4] }}</td>
         </tr>
         {% endfor %}
     </tbody>

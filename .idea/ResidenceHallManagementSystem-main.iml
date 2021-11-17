@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/dp-proj-venv-merged" />
       <excludeFolder url="file://$MODULE_DIR$/dp-proj-venv-15-nov" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (ResidenceHallManagementSystem_15_Nov) (2)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (ResidenceHallManagementSystem-main)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

@@ -195,7 +195,10 @@ def index():
 #         return render_template("index.html")
 
 @app.route('/getPaymentSummary')
+@nocache
 def getPaymentSummary():
+    if (session["id"] is None):
+        return redirect('/')
     cursor = g.conn.execute('select outstanding_rent, dining_hall_credit  from residents where residentid=%s',
                             session['id'])
     residentCurrentAmount = []
@@ -213,12 +216,18 @@ def getPaymentSummary():
 
 
 @app.route('/orderFood')
+@nocache
 def orderFood():
+    if (session["id"] is None):
+        return redirect('/')
     return render_template("orderFood.html")
 
 
 @app.route('/getItalian')
+@nocache
 def getItalian():
+    if (session["id"] is None):
+        return redirect('/')
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
     dining_credit = 0
     for row in cursor:
@@ -242,7 +251,10 @@ def getItalian():
 
 
 @app.route('/getSnacks')
+@nocache
 def getSnacks():
+    if (session["id"] is None):
+        return redirect('/')
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
     dining_credit = 0
     for row in cursor:
@@ -266,7 +278,10 @@ def getSnacks():
 
 
 @app.route('/getIndianMeal')
+@nocache
 def getIndianMeal():
+    if (session["id"] is None):
+        return redirect('/')
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
     dining_credit = 0
     for row in cursor:
@@ -290,7 +305,10 @@ def getIndianMeal():
 
 
 @app.route('/getChicken')
+@nocache
 def getChicken():
+    if (session["id"] is None):
+        return redirect('/')
     cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
     dining_credit = 0
     for row in cursor:
@@ -314,24 +332,58 @@ def getChicken():
 
 
 @app.route('/raiseFinanceRequest')
+@nocache
 def raiseFinanceRequest():
+    if (session["id"] is None):
+        return redirect('/')
     return render_template("raiseFinanceRequest.html")
 
 
 @app.route('/newFinanceRequest', methods=['POST'])
+@nocache
 def add_new_FinanceRequest():
+    if (session["id"] is None):
+        return redirect('/')
     residentID = session["id"]
     requestID = 0
-
     description = request.form['financeCategory']
-
     request_priority = 1
+    amount = 0
+    today = str(date.today())
+    raisedon = today
+    outstanding = 0
     request_status = 'Pending'
-    amount = request.form['amount']
+    if description == 'Rent Payment':
+        print('Room Rent')
+        cursor = g.conn.execute('select outstanding_rent from residents where residentid=%s', session['id'])
+        for row in cursor:
+            outstanding = int(row[0])
+        print(outstanding)
+        if outstanding == 0:
+            request_status = 'Rejected'
+        else:
+            args = (0, session['id'])
+            g.conn.execute('update residents set outstanding_rent=%s where residentid=%s', args)
+            request_status = 'Approved'
+
+    if description == 'Rent Payment':
+        amount = outstanding
+
+    if description == 'Dining Fees':
+        amount = 100
+        dining_hall = 0
+        cursor = g.conn.execute('select dining_hall_credit from residents where residentid=%s', session['id'])
+        for row in cursor:
+            dining_hall = row[0]
+        dining_hall = amount + dining_hall
+        args = (dining_hall, session['id'])
+        g.conn.execute('update residents set dining_hall_credit=%s where residentid=%s', args)
+        request_status = 'Approved'
 
     today = str(date.today())
     print(today)
     raisedon = today
+
     args = (description, request_priority, request_status)
     g.conn.execute(
         "INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
@@ -339,6 +391,7 @@ def add_new_FinanceRequest():
     cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
     for row in cursor:
         requestID = int(row[0])
+
     args = (requestID, amount)
     g.conn.execute("INSERT INTO Finance_Requests(requestid,amount) VALUES (%s, %s)", args)
     args = (residentID, requestID, raisedon)
@@ -356,10 +409,11 @@ def add_new_FinanceRequest():
 
 
 @app.route('/raiseTaskRequest')
+@nocache
 def raiseTaskRequest():
-    today = str(date.today())
-    context = dict(todays_date=today)
-    return render_template("raiseTaskRequest.html", **context)
+    if (session["id"] is None):
+        return redirect('/')
+    return render_template("raiseTaskRequest.html")
 
 
 @app.route('/newTaskRequest', methods=['POST'])
@@ -371,7 +425,7 @@ def add_new_TaskRequest():
     residentID = session['id']
 
     description = request.form['description']
-    category = request.form['category']
+    category = request.form['taskCategory']
     request_priority = 1
     request_status = 'Pending'
 
@@ -407,9 +461,11 @@ def add_new_TaskRequest():
 def getTaskRequest():
     if (session["id"] is None):
         return redirect('/')
+
     cursor = g.conn.execute(
-        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",
+        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from task_requests)",
         session["id"])
+
     requests = []
     for result in cursor:
         print(result)
@@ -423,9 +479,11 @@ def getTaskRequest():
 def getFinanceRequest():
     if (session["id"] is None):
         return redirect('/')
+
     cursor = g.conn.execute(
-        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",
+        "SELECT R1.requestid, R1.request_description, R1.request_priority, R1.request_status, R2.raisedon FROM Requests R1, Raises R2 where R1.requestid=R2.requestid and residentid=%s and R1.requestid in (select requestid from finance_requests)",
         session["id"])
+
     requests = []
     for result in cursor:
         print(result)
@@ -490,6 +548,7 @@ def render_resident_login_page():
         return render_template("resident_login.html")
 
 
+
 @app.route('/residentHome', methods=["POST", "GET"])
 @nocache
 def resident_login():
@@ -522,11 +581,14 @@ def resident_login():
 
 @app.route('/employee_login_page')
 def render_employee_login_page():
+    if (session["id"] is not None):
+        return redirect('/')
     return render_template("employee_login.html")
 
 
 @app.route('/employeeHome', methods=["POST", "GET"])
 def employee_login():
+
     session["type"] = "employee"
     if request.method == "POST":
         employee_id = request.form.get("employee_id")
@@ -572,7 +634,10 @@ def logout():
 
 
 @app.route('/admissions')
+@nocache
 def admissions_employee():
+    if (session["id"] is None):
+        return redirect('/')
     status_needed = "Pending"
     cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", status_needed)
     pending_applications = []
@@ -589,7 +654,10 @@ def admissions_employee():
 
 
 @app.route('/finance')
+@nocache
 def finance_employee():
+    if (session["id"] is None):
+        return redirect('/')
     status_needed = "Pending"
     args = (status_needed, session["id"])
     cursor = g.conn.execute(
@@ -610,9 +678,15 @@ def finance_employee():
 
 
 @app.route('/facilities')
+@nocache
 def facilities_employee():
+
+    if (session["id"] is None):
+        return redirect('/')
+
     status_not_wanted = "Complete"
     args = (status_not_wanted, session["id"])
+
     cursor = g.conn.execute(
         "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, tr.category, "
         "r1.raisedon FROM requests r "
@@ -631,7 +705,10 @@ def facilities_employee():
 
 
 @app.route('/admissions/approved', methods=["POST"])
+@nocache
 def admission_approved():
+    if (session["id"] is None):
+        return redirect('/')
     application_id = request.form.get("application_id")
     room_number = request.form.get("room_number")
     new_status = 'Approved'
@@ -694,7 +771,9 @@ def admission_approved():
     room_rent = []
     for result in room_rent_cursor:
         room_rent.append(result)
-    outstanding_rent = room_rent[0]
+
+    outstanding_rent = int(room_rent[0][0])
+
     args = (
         fields[0][0], fields[0][1], fields[0][2], fields[0][3], fields[0][4], fields[0][5], 500, fields[0][6],
         fields[0][7], room_number, outstanding_rent)
@@ -705,12 +784,15 @@ def admission_approved():
 
 
 @app.route('/admissions/rejected', methods=['POST'])
+@nocache
 def admission_rejected():
+    if (session["id"] is None):
+        return redirect('/')
     application_id = request.form.get("application_id")
     old_status = "Pending"
     all_application_id = g.conn.execute("SELECT applicationid FROM Applicants_ApprovedBy WHERE approval_status=%s",
                                         old_status)
-    new_status = "rejected"
+    new_status = "Rejected"
     application_id_list = []
     cursor = g.conn.execute("SELECT * FROM Applicants_ApprovedBy WHERE approval_status=%s", old_status)
     pending_applications = []
@@ -736,7 +818,10 @@ def admission_rejected():
 
 
 @app.route("/finance/approved", methods=["POST"])
+@nocache
 def finance_approved():
+    if (session["id"] is None):
+        return redirect('/')
     request_id = request.form.get("request_id")
     amount = request.form.get("amount")
     new_status = "Approved"
@@ -763,9 +848,12 @@ def finance_approved():
 
 
 @app.route('/finance/rejected', methods=["POST"])
+@nocache
 def finance_rejected():
+    if (session["id"] is None):
+        return redirect('/')
     request_id = request.form.get("request_id")
-    new_status = "rejected"
+    new_status = "Rejected"
     result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
     if result.rowcount != 0:
         return redirect("/finance")
@@ -788,7 +876,10 @@ def finance_rejected():
 
 
 @app.route('/facilities/status_update', methods=["POST"])
+@nocache
 def facilities_status_update():
+    if (session["id"] is None):
+        return redirect('/')
     request_id = request.form.get("request_id")
     new_status = request.form.get("current_status")
     result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
@@ -816,7 +907,10 @@ def facilities_status_update():
 
 
 @app.route('/facilities/priority_update', methods=["POST"])
+@nocache
 def facilities_priority_update():
+    if (session["id"] is None):
+        return redirect('/')
     request_id = request.form.get("request_id")
     new_priority = request.form.get("current_priority")
     result = g.conn.execute("UPDATE Requests SET request_priority=%s WHERE requestid=%s", (new_priority, request_id))
