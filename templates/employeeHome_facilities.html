@@ -24,6 +24,11 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/facilities">Home</a>
+                <a class="nav-link" href="/employeeDetails">Employee Details</a>
+                </div>
+
             <div class="navbar-nav ms-auto">
 
                     <a class="nav-link" href="/logout">Logout</a>
@@ -44,6 +49,7 @@
             <th>Request Priority</th>
             <th>Request Status</th>
             <th>Request Category</th>
+            <th>Request Date</th>
         </tr>
     </thead>
     <tbody>
@@ -55,6 +61,7 @@
             <td>{{ n[3] }}</td>
             <td>{{ n[4] }}</td>
             <td>{{ n[5] }}</td>
+            <td>{{ n[6] }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -71,7 +78,8 @@
           <datalist id="current_status">
           <option value="In Progress">
             <option value="On Hold">
-          <option value="Completed">
+          <option value="Complete">
+              <option value="Rejected">
       </datalist>
       <p><input type="submit" value="Submit"></p>
   </form>
