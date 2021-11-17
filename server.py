@@ -196,19 +196,20 @@ def index():
 
 @app.route('/getPaymentSummary')
 def getPaymentSummary():
-    cursor = g.conn.execute('select outstanding_rent, dining_hall_credit  from residents where residentid=%s', session['id'])
+    cursor = g.conn.execute('select outstanding_rent, dining_hall_credit  from residents where residentid=%s',
+                            session['id'])
     residentCurrentAmount = []
     for row in cursor:
         residentCurrentAmount.append(row)
     cursor = g.conn.execute("select R1.request_description, R2.amount, R3.raisedon from requests R1, Finance_Requests "
                             "R2,Raises R3 where R1.requestid=R2.requestid and R1.requestid=R3.requestid and "
                             "R3.residentid=%s and (R1.request_description = 'Rent Payment' or "
-                            "R1.request_description='Dining Fees') and R1.request_status='Approved'",session['id'])
+                            "R1.request_description='Dining Fees') and R1.request_status='Approved'", session['id'])
     financeReq = []
     for row in cursor:
         financeReq.append(row)
     context = dict(residentCurrentAmount=residentCurrentAmount, financeReq=financeReq)
-    return render_template('paymentSummary.html',**context)
+    return render_template('paymentSummary.html', **context)
 
 
 @app.route('/orderFood')
@@ -322,7 +323,6 @@ def add_new_FinanceRequest():
     residentID = session["id"]
     requestID = 0
 
-
     description = request.form['financeCategory']
 
     request_priority = 1
@@ -378,13 +378,13 @@ def add_new_TaskRequest():
     today = str(date.today())
     raisedon = today
 
-    args = (description , request_priority, request_status)
-    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",args)
+    args = (description, request_priority, request_status)
+    g.conn.execute("INSERT INTO Requests(request_description, request_priority, request_status) VALUES ( %s, %s, %s)",
+                   args)
     cursor = g.conn.execute('select requestid from requests order by requestid DESC limit 1')
 
     for row in cursor:
         requestID = int(row[0])
-
 
     args = (requestID, category)
     g.conn.execute("INSERT INTO Task_Requests(requestid,category) VALUES (%s, %s)", args)
@@ -793,17 +793,18 @@ def facilities_status_update():
     new_status = request.form.get("current_status")
     result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
     if result.rowcount == 0:
-        status_not_wanted_1 = "complete"
-        status_not_wanted_2 = "completed"
+        status_not_wanted = "Complete"
+        args = (status_not_wanted, session["id"])
         cursor = g.conn.execute(
             "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
-            "tr.category "
-            "FROM requests r "
+            "tr.category, r1.raisedon FROM requests r "
             "JOIN raises r1 "
             "ON r.requestid=r1.requestid "
             "JOIN task_requests tr "
             "ON r.requestid=tr.requestid "
-            "WHERE r.request_status <> %s", (status_not_wanted_1, status_not_wanted_2))
+            "JOIN managed_by m "
+            "ON m.requestid=r.requestid "
+            "WHERE r.request_status <> %s AND m.empid=%s", args)
         task_requests = []
         for result in cursor:
             task_requests.append(result)
@@ -820,17 +821,18 @@ def facilities_priority_update():
     new_priority = request.form.get("current_priority")
     result = g.conn.execute("UPDATE Requests SET request_priority=%s WHERE requestid=%s", (new_priority, request_id))
     if result.rowcount == 0:
-        status_not_wanted_1 = "complete"
-        status_not_wanted_2 = "completed"
+        status_not_wanted = "Complete"
+        args = (status_not_wanted, session["id"])
         cursor = g.conn.execute(
             "SELECT r.requestid, r1.residentid, r.request_description, r.request_priority, r.request_status, "
-            "tr.category "
-            "FROM requests r "
+            "tr.category, r1.raisedon FROM requests r "
             "JOIN raises r1 "
             "ON r.requestid=r1.requestid "
             "JOIN task_requests tr "
             "ON r.requestid=tr.requestid "
-            "WHERE r.request_status <> %s", (status_not_wanted_1, status_not_wanted_2))
+            "JOIN managed_by m "
+            "ON m.requestid=r.requestid "
+            "WHERE r.request_status <> %s AND m.empid=%s", args)
         task_requests = []
         for result in cursor:
             task_requests.append(result)
@@ -855,7 +857,6 @@ def employeeDetails():
         return render_template('employeeDetails_finance.html', **context)
     else:
         return render_template('employeeDetails_facilities.html', **context)
-
 
 
 if __name__ == "__main__":
