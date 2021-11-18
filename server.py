@@ -259,7 +259,7 @@ def getItalian():
         g.conn.execute(
             "INSERT INTO Dining_Hall_Orders(item_name, bill_amount, category, order_on, residentid) VALUES ( %s, %s, %s, %s, %s)",
             args)
-        dining_credit = dining_credit - 15
+        dining_credit = dining_credit - bill_amount
         g.conn.execute(
             "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
             (dining_credit, session['id']))
@@ -289,7 +289,7 @@ def getSnacks():
         g.conn.execute(
             "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
             args)
-        dining_credit = dining_credit - 9
+        dining_credit = dining_credit - bill_amount
         g.conn.execute(
             "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
             (dining_credit, session['id']))
@@ -319,7 +319,7 @@ def getIndianMeal():
         g.conn.execute(
             "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
             args)
-        dining_credit = dining_credit - 15
+        dining_credit = dining_credit - bill_amount
         g.conn.execute(
             "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
             (dining_credit, session['id']))
@@ -349,7 +349,7 @@ def getChicken():
         g.conn.execute(
             "INSERT INTO Dining_Hall_Orders(item_name, bill_amount , category, order_on, residentid ) VALUES ( %s, %s, %s, %s, %s)",
             args)
-        dining_credit = dining_credit - 15
+        dining_credit = dining_credit - bill_amount
         g.conn.execute(
             "Update Residents SET dining_hall_credit=%s WHERE residentid = %s",
             (dining_credit, session['id']))
