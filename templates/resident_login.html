@@ -12,7 +12,7 @@
     <p><strong>Error:</strong> {{ error }}</p>
   {% endif %}
   <form method="POST" action="/residentHome">
-      <p>Resident ID: <input type="text" name="resident_id" required></p>
+      <p>Resident ID: <input type="number" name="resident_id" required></p>
       <p>Password (Passport Number): <input type="password" name="password" required></p>
       <p><input type="submit" value="Login"></p>
   </form>
