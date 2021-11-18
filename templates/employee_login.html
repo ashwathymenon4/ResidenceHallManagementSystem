@@ -12,7 +12,7 @@
     <p><strong>Error:</strong> {{ error }}</p>
   {% endif %}
   <form method="POST" action="/employeeHome">
-      <p>Employee ID: <input type="text" name="employee_id" required></p>
+      <p>Employee ID: <input type="number" name="employee_id" required></p>
       <p>Password (SSN XXX-XX-XXXX): <input type="password" name="password" required></p>
       <p><input type="submit" value="Login"></p>
   </form>
