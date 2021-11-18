@@ -909,10 +909,17 @@ def finance_approved():
             return redirect('/')
         request_id = request.form.get("request_id")
         amount = request.form.get("amount")
-        new_status = "Approved"
-        result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
-        result = g.conn.execute("UPDATE Finance_Requests SET amount=%s WHERE requestid=%s", (amount, request_id))
-        if result.rowcount == 0:
+        old_status='Pending'
+        args = ( old_status, session["id"] )
+        cursor_get_all_request_ids_for_employee = g.conn.execute("SELECT r.requestid "
+                "FROM requests r "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status=%s AND m.empid=%s", args)
+        get_all_request_ids_for_employee = []
+        for result in cursor_get_all_request_ids_for_employee:
+            get_all_request_ids_for_employee.append(result[0])
+        if request_id not in get_all_request_ids_for_employee:
             status_needed = "Pending"
             args = (status_needed, session["id"])
             cursor = g.conn.execute(
@@ -932,6 +939,9 @@ def finance_approved():
             error = "Please check the Request ID"
             return render_template("employeeHome_finance.html", **context, error=error)
         else:
+            new_status = "Approved"
+            result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+            result = g.conn.execute("UPDATE Finance_Requests SET amount=%s WHERE requestid=%s", (amount, request_id))
             return redirect("/finance")
     except:
         return redirect('/errorHandler')
@@ -944,11 +954,17 @@ def finance_rejected():
         if (session["id"] is None):
             return redirect('/')
         request_id = request.form.get("request_id")
-        new_status = "Rejected"
-        result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
-        if result.rowcount != 0:
-            return redirect("/finance")
-        else:
+        old_status='Pending'
+        args = ( old_status, session["id"] )
+        cursor_get_all_request_ids_for_employee = g.conn.execute("SELECT r.requestid "
+                "FROM requests r "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status=%s AND m.empid=%s", args)
+        get_all_request_ids_for_employee = []
+        for result in cursor_get_all_request_ids_for_employee:
+            get_all_request_ids_for_employee.append(result[0])
+        if request_id not in get_all_request_ids_for_employee:
             status_needed = "Pending"
             args = (status_needed, session["id"])
             cursor = g.conn.execute(
@@ -967,6 +983,10 @@ def finance_rejected():
             context = dict(pending_finance_requests=pending_finance_requests)
             error1 = "Please check the Request ID"
             return render_template("employeeHome_finance.html", **context, error1=error1)
+        else
+            new_status = "Rejected"
+            result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+            return redirect("/finance")         
     except:
         return redirect('/errorHandler')
 
@@ -978,9 +998,17 @@ def facilities_status_update():
         if (session["id"] is None):
             return redirect('/')
         request_id = request.form.get("request_id")
-        new_status = request.form.get("current_status")
-        result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
-        if result.rowcount == 0:
+        status_not_wanted = "Complete"
+        args = (status_not_wanted, session["id"])
+        cursor_get_all_request_ids_for_employee = g.conn.execute("SELECT r.requestid "
+                "FROM requests r "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status<>%s AND m.empid=%s", args)
+        get_all_request_ids_for_employee = []
+        for result in cursor_get_all_request_ids_for_employee:
+            get_all_request_ids_for_employee.append(result[0])
+        if request_id not in get_all_request_ids_for_employee:
             status_not_wanted = "Complete"
             args = (status_not_wanted, session["id"])
             cursor = g.conn.execute(
@@ -1000,6 +1028,8 @@ def facilities_status_update():
             error = "Please check the Request ID"
             return render_template("employeeHome_facilities.html", **context, error=error)
         else:
+            new_status = request.form.get("current_status")
+            result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
             return redirect("/facilities")
     except:
         return redirect('/errorHandler')
@@ -1012,10 +1042,17 @@ def facilities_priority_update():
         if (session["id"] is None):
             return redirect('/')
         request_id = request.form.get("request_id")
-        new_priority = request.form.get("current_priority")
-        result = g.conn.execute("UPDATE Requests SET request_priority=%s WHERE requestid=%s",
-                                (new_priority, request_id))
-        if result.rowcount == 0:
+        status_not_wanted = "Complete"
+        args = (status_not_wanted, session["id"])
+        cursor_get_all_request_ids_for_employee = g.conn.execute("SELECT r.requestid "
+                "FROM requests r "
+                "JOIN managed_by m "
+                "ON m.requestid=r.requestid "
+                "WHERE r.request_status<>%s AND m.empid=%s", args)
+        get_all_request_ids_for_employee = []
+        for result in cursor_get_all_request_ids_for_employee:
+            get_all_request_ids_for_employee.append(result[0])
+        if request_id not in get_all_request_ids_for_employee:
             status_not_wanted = "Complete"
             args = (status_not_wanted, session["id"])
             cursor = g.conn.execute(
@@ -1032,9 +1069,11 @@ def facilities_priority_update():
             for result in cursor:
                 task_requests.append(result)
             context = dict(task_requests=task_requests)
-            error1 = "Please check the Request ID"
-            return render_template("employeeHome_facilities.html", **context, error1=error1)
+            error = "Please check the Request ID"
+            return render_template("employeeHome_facilities.html", **context, error=error)
         else:
+            new_priority = request.form.get("current_status")
+            result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
             return redirect("/facilities")
     except:
         return redirect('/errorHandler')
