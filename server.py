@@ -919,7 +919,7 @@ def finance_approved():
         get_all_request_ids_for_employee = []
         for result in cursor_get_all_request_ids_for_employee:
             get_all_request_ids_for_employee.append(result[0])
-        if request_id not in get_all_request_ids_for_employee:
+        if int(request_id) not in get_all_request_ids_for_employee:
             status_needed = "Pending"
             args = (status_needed, session["id"])
             cursor = g.conn.execute(
@@ -964,7 +964,7 @@ def finance_rejected():
         get_all_request_ids_for_employee = []
         for result in cursor_get_all_request_ids_for_employee:
             get_all_request_ids_for_employee.append(result[0])
-        if request_id not in get_all_request_ids_for_employee:
+        if int(request_id) not in get_all_request_ids_for_employee:
             status_needed = "Pending"
             args = (status_needed, session["id"])
             cursor = g.conn.execute(
@@ -1008,7 +1008,7 @@ def facilities_status_update():
         get_all_request_ids_for_employee = []
         for result in cursor_get_all_request_ids_for_employee:
             get_all_request_ids_for_employee.append(result[0])
-        if request_id not in get_all_request_ids_for_employee:
+        if int(request_id) not in get_all_request_ids_for_employee:
             status_not_wanted = "Complete"
             args = (status_not_wanted, session["id"])
             cursor = g.conn.execute(
@@ -1052,7 +1052,7 @@ def facilities_priority_update():
         get_all_request_ids_for_employee = []
         for result in cursor_get_all_request_ids_for_employee:
             get_all_request_ids_for_employee.append(result[0])
-        if request_id not in get_all_request_ids_for_employee:
+        if int(request_id) not in get_all_request_ids_for_employee:
             status_not_wanted = "Complete"
             args = (status_not_wanted, session["id"])
             cursor = g.conn.execute(
@@ -1069,11 +1069,11 @@ def facilities_priority_update():
             for result in cursor:
                 task_requests.append(result)
             context = dict(task_requests=task_requests)
-            error = "Please check the Request ID"
-            return render_template("employeeHome_facilities.html", **context, error=error)
+            error1 = "Please check the Request ID"
+            return render_template("employeeHome_facilities.html", **context, error1=error1)
         else:
-            new_priority = request.form.get("current_status")
-            result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
+            new_priority = request.form.get("current_priority")
+            result = g.conn.execute("UPDATE Requests SET request_priority=%s WHERE requestid=%s", (new_priority, request_id))
             return redirect("/facilities")
     except:
         return redirect('/errorHandler')
