@@ -983,7 +983,7 @@ def finance_rejected():
             context = dict(pending_finance_requests=pending_finance_requests)
             error1 = "Please check the Request ID"
             return render_template("employeeHome_finance.html", **context, error1=error1)
-        else
+        else:
             new_status = "Rejected"
             result = g.conn.execute("UPDATE Requests SET request_status=%s WHERE requestid=%s", (new_status, request_id))
             return redirect("/finance")         
