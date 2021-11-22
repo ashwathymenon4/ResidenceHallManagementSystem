@@ -46,17 +46,6 @@ DATABASEURI = "postgresql://sr3846:5390@34.74.246.148/proj1part2"
 engine = create_engine(DATABASEURI)
 
 
-#
-# Example of running queries in your database
-# Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
-#
-
-# engine.execute("""CREATE TABLE IF NOT EXISTS test (
-#   id serial,
-#   name text
-# );""")
-# engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
-
 
 @app.before_request
 def before_request():
@@ -114,50 +103,7 @@ def index():
 
   """
 
-    # DEBUG: this is debugging code to see what request looks like
-    # print(request.args)
-
-    #
-    # example of a database query
-    #
-    # cursor = g.conn.execute("SELECT name FROM test")
-    # names = []
-    # for result in cursor:
-    #   names.append(result['name'])  # can also be accessed using result[0]
-    # cursor.close()
-
-    #
-    # Flask uses Jinja templates, which is an extension to HTML where you can
-    # pass data to a template and dynamically generate HTML based on the data
-    # (you can think of it as simple PHP)
-    # documentation: https://realpython.com/primer-on-jinja-templating/
-    #
-    # You can see an example template in templates/index.html
-    #
-    # context are the variables that are passed to the template.
-    # for example, "data" key in the context variable defined below will be
-    # accessible as a variable in index.html:
-    #
-    #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
-    #     <div>{{data}}</div>
-    #
-    #     # creates a <div> tag for each element in data
-    #     # will print:
-    #     #
-    #     #   <div>grace hopper</div>
-    #     #   <div>alan turing</div>
-    #     #   <div>ada lovelace</div>
-    #     #
-    #     {% for n in data %}
-    #     <div>{{n}}</div>
-    #     {% endfor %}
-    #
-    # context = dict(data = names)
-
-    #
-    # render_template looks in the templates/ folder for files.
-    # for example, the below file reads template/index.html
-    #
+    
     try:
         if session["id"] is not None:
             if session["type"] == "resident":
@@ -174,25 +120,6 @@ def index():
     except:
         return render_template("index.html")
 
-
-#
-# This is an example of a different path.  You can see it at:
-# 
-#     localhost:8111/another
-#
-# Notice that the function name is another() rather than index()
-# The functions for each app.route need to have different names
-#
-
-# @app.route('/residentHome')
-# def residents():
-#     print(session["id"])
-#     if session["id"] is not None:
-#         today = str(date.today())
-#         context = dict(todays_date=today)
-#         return render_template("residentHome.html", **context)
-#     else:
-#         return render_template("index.html")
 
 @app.route('/getPaymentSummary')
 @nocache
